@@ -237,7 +237,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		for (TwoERefKey key : cleanMe) {
 			collInfo.forward.remove(key);
 		}
-		LOGGER.debug("Size befoe = " + before + ", Size after = " + collInfo.size());
+		LOGGER.info("Size befoe = " + before + ", Size after = " + collInfo.size());
 
 	}
 
@@ -268,7 +268,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		for (String name : cleanMe) {
 			names.remove(name);
 		}
-		LOGGER.debug("Size befoe = " + before + ", Size after = " + names.size());
+		LOGGER.info("Size befoe = " + before + ", Size after = " + names.size());
 	}
 
 	@Override

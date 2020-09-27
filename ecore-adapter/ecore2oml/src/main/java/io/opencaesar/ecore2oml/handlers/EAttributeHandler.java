@@ -38,7 +38,7 @@ public class EAttributeHandler implements ConversionHandler {
 		@SuppressWarnings("unchecked")
 		Map<String, CollisionInfo> names = (Map<String, CollisionInfo>) collections
 				.get(CollectionKind.CollidingAttributes);
-		CollisionInfo collisionInfo = names.get(name);
+		CollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 		final boolean isFunctional = object.getUpperBound() == 1;
 		if (collisionInfo != null) {
 			// fix the rangeIRI

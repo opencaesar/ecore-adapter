@@ -151,7 +151,7 @@ public class EAttributeConversionParticipant extends ConversionParticipant {
 		for (String name : cleanMe) {
 			names.remove(name);
 		}
-		LOGGER.debug("Size befoe = " + before + ", Size after = " + names.size());
+		LOGGER.info("Size befoe = " + before + ", Size after = " + names.size());
 	}
 
 }

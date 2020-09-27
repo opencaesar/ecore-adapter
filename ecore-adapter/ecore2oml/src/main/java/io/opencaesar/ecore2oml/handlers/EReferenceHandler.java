@@ -60,7 +60,7 @@ public class EReferenceHandler implements ConversionHandler{
 		RefCollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 
 
-		if (opposite!=null && collidingEOpposite.shouldSkip(object)) {
+		if (opposite!=null && collidingEOpposite!=null &&  collidingEOpposite.shouldSkip(object)) {
 			return null;
 		}
 		

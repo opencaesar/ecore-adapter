@@ -73,7 +73,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	private final EPackage ePackage;
 	private final URI outputResourceURI;
 	private final OmlWriter oml;
-	private Set<ConversionPreProcessing> preprocessors;
+	private Set<ConversionPreProcessing> preprocessors = new HashSet<>();
 	
 	private Logger LOGGER = LogManager.getLogger(Ecore2Oml.class);
 	
@@ -215,7 +215,6 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	
 	private void initPreProcessors(){
-		preprocessors = new HashSet<>();
 		for (Class<? extends ConversionPreProcessing> class1 : preProcessorsRegistery) {
 			try {
 				ConversionPreProcessing pre = class1.getDeclaredConstructor().newInstance();
