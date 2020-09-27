@@ -19,7 +19,7 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.CONSTANTS;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
-import io.opencaesar.ecore2oml.preprocessors.EAttributeConversionParticipant.CollisionInfo;
+import io.opencaesar.ecore2oml.preprocessors.CollisionInfo;
 import io.opencaesar.oml.AnnotationProperty;
 import io.opencaesar.oml.Aspect;
 import io.opencaesar.oml.Property;
