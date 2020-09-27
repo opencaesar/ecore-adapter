@@ -56,7 +56,7 @@ public class EReferenceHandler implements ConversionHandler{
 		Map<String, RefCollisionInfo> names = (Map<String, RefCollisionInfo>) collections.get(CollectionKind.CollidingRefernces);
 		CollidingEOppositeData collidingEOpposite = (CollidingEOppositeData) collections.get(CollectionKind.CollidingEOppositeRefernces);
 		final String name = getMappedName(object);
-		final String entityName =  StringExtensions.toFirstUpper(name) + "Relation";
+		final String entityName =  StringExtensions.toFirstUpper(name) + CONSTANTS.EREFERENCE_POSTFIX;
 		RefCollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 
 

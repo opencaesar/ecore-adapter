@@ -20,7 +20,6 @@ import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
@@ -39,7 +38,7 @@ public class Util {
 			EStructuralFeature eFeature = (EStructuralFeature)object;
 			EClass container = eFeature.getEContainingClass();
 			if (container!=null) {
-				defaultValue = StringExtensions.toFirstLower(container.getName()) + "__" + defaultValue;
+				defaultValue = defaultValue + CONSTANTS.NAME_SEPERATOR + container.getName();
 			}
 		}
 		return getAnnotationValue(object, AnnotationKind.name, defaultValue);

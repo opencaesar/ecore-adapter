@@ -65,7 +65,6 @@ public class EAttributeHandler implements ConversionHandler {
 	public EObject convert(EObject oObject, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections) {
 		EAttribute object = (EAttribute) oObject;
-		final String name = getMappedName(object);
 		final EClass domain = object.getEContainingClass();
 		final EDataType range = object.getEAttributeType();
 		final boolean isDerived = object.isDerived();
