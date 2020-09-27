@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.CONSTANTS;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.EAttributeConversionParticipant.CollisionInfo;
 import io.opencaesar.oml.AnnotationProperty;
@@ -30,8 +31,6 @@ import io.opencaesar.oml.util.OmlWriter;
 
 public class EAttributeHandler implements ConversionHandler {
 
-	static private final String BASE_PREFIX = "Base";
-
 	static public ScalarProperty handleEAttributeToScalarProperty(EAttribute object, String domainIri, String rangeIri,
 			OmlWriter oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections) {
 		final String name = getMappedName(object);
@@ -43,7 +42,7 @@ public class EAttributeHandler implements ConversionHandler {
 		final boolean isFunctional = object.getUpperBound() == 1;
 		if (collisionInfo != null) {
 			// fix the rangeIRI
-			String realName = BASE_PREFIX + StringExtensions.toFirstUpper(name);
+			String realName = CONSTANTS.BASE_PREFIX + StringExtensions.toFirstUpper(name);
 			if (!memberExists(realName, vocabulary)) {
 				collisionInfo.baseConcept = oml.addAspect(vocabulary, realName);
 				collisionInfo.baseProperty = oml.addScalarProperty(vocabulary, name,

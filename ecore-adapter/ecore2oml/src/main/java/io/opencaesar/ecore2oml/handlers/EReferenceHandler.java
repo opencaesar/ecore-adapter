@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.CONSTANTS;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.EReferencConversionParticipant.CollidingEOppositeData;
 import io.opencaesar.ecore2oml.preprocessors.EReferencConversionParticipant.RefCollisionInfo;
@@ -28,10 +29,7 @@ import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.util.OmlWriter;
 
 public class EReferenceHandler implements ConversionHandler{
-	static private final String BASE_PREFIX = "Base";
-	static private final String FROM = "From";
-	static private final String To = "To";
-
+	
 	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections) {
 		EReference object = (EReference)eObject;
@@ -70,10 +68,10 @@ public class EReferenceHandler implements ConversionHandler{
 		if (collisionInfo!=null) {
 			// create the base source, and target
 			if (collisionInfo.fromAspect==null) {
-				String baseNameFrom = BASE_PREFIX + entityName + FROM;
+				String baseNameFrom = CONSTANTS.BASE_PREFIX + entityName + CONSTANTS.FROM;
 				collisionInfo.fromAspect = oml.addAspect(vocabulary, baseNameFrom);
 				addGeneratedAnnotation(collisionInfo.fromAspect, oml, vocabulary);
-				String baseNameTo = BASE_PREFIX + entityName + To;
+				String baseNameTo = CONSTANTS.BASE_PREFIX + entityName + CONSTANTS.To;
 				collisionInfo.toAspect = oml.addAspect(vocabulary, baseNameTo);
 				addGeneratedAnnotation(collisionInfo.toAspect, oml, vocabulary);
 			}
