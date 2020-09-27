@@ -101,7 +101,7 @@ public class EReferenceHandler implements ConversionHandler{
 			// the forward relation
 			final String forwardName = name;
 			ForwardRelation forward = oml.addForwardRelation(entity, forwardName);
-			addLabelAnnotatiopnIfNeeded(forward, forwardName, oml, vocabulary);
+			addLabelAnnotatiopnIfNeeded(object,forward, oml, vocabulary);
 			if (collisionInfo!=null) {
 				collisionInfo.entity = entity;
 				collisionInfo.forward = forward;
@@ -113,7 +113,7 @@ public class EReferenceHandler implements ConversionHandler{
 					reverseName = getAnnotationValue(object, AnnotationKind.reverseName);
 				}
 				ReverseRelation reverse = oml.addReverseRelation(entity, reverseName);
-				addLabelAnnotatiopnIfNeeded(reverse, reverseName, oml, vocabulary);
+				addLabelAnnotatiopnIfNeeded(opposite,reverse, oml, vocabulary);
 			}
 		}
 		

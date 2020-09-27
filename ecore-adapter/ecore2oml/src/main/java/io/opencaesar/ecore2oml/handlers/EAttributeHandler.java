@@ -103,7 +103,8 @@ public class EAttributeHandler implements ConversionHandler {
 		} else {
 			property = handleEAttributeToScalarProperty(object, domainIri, rangeIri, oml, vocabulary, collections);
 		}
-		addLabelAnnotatiopnIfNeeded(property, name, oml, vocabulary);
+		//addLabelAnnotatiopnIfNeeded(property, name, oml, vocabulary);
+		addLabelAnnotatiopnIfNeeded(object,property, oml, vocabulary);
 		return property;
 	}
 

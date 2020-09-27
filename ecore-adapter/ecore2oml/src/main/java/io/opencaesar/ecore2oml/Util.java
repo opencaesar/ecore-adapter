@@ -76,6 +76,13 @@ public class Util {
 			oml.addAnnotation(vocabulary, OmlRead.getIri(object), RDFS+"#label", label);
 		}
 	}
+	
+	public static void addLabelAnnotatiopnIfNeeded(ENamedElement object, Member element, OmlWriter oml, Vocabulary vocabulary) {
+		if (!object.getName().equals(element.getName())) {
+			Literal label = oml.createQuotedLiteral(vocabulary, object.getName(), null, null);
+			oml.addAnnotation(vocabulary, OmlRead.getIri(element), RDFS+"#label", label);
+		}
+	}
 		
 	public static String getPrefix(EPackage object) {
 		return object.getNsPrefix();
