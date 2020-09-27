@@ -228,7 +228,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 			TwoERefKey key = entry.getKey();
 			Set<EReference> val = entry.getValue();
 			if (val.size() > 1) {
-				LOGGER.info(getMappedName(key.forward) + " ==> " + val.size());
+				LOGGER.debug(getMappedName(key.forward) + " ==> " + val.size());
 			} else {
 				cleanMe.add(key);
 			}
@@ -237,7 +237,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		for (TwoERefKey key : cleanMe) {
 			collInfo.forward.remove(key);
 		}
-		LOGGER.info("Size befoe = " + before + ", Size after = " + collInfo.size());
+		LOGGER.debug("Size befoe = " + before + ", Size after = " + collInfo.size());
 
 	}
 
