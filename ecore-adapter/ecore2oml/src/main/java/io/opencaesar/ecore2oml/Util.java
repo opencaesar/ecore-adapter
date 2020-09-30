@@ -30,6 +30,8 @@ import io.opencaesar.oml.util.OmlWriter;
 
 public class Util {
 	
+	private static final String GEN_MODEL = "http://www.eclipse.org/emf/2002/GenModel";
+	private static final Object DOCUMENTATION = "documentation"; 
 
 	public static String getMappedName(ENamedElement object) {
 		String defaultValue =  object.getName();
@@ -181,5 +183,16 @@ public class Util {
 			}
 		}
 		return iri;
+	}
+	
+	static public void handleNamedElementDoc(ENamedElement element, Member object, OmlWriter oml, Vocabulary vocabulary) {
+		EAnnotation genModelAnnotation = element.getEAnnotation(GEN_MODEL);
+		if (genModelAnnotation!=null) {
+			String val = genModelAnnotation.getDetails().get(DOCUMENTATION);
+			if (val!=null && !val.isBlank()) {
+				Literal value = oml.createQuotedLiteral(vocabulary, val, null, null);
+				oml.addAnnotation(vocabulary, OmlRead.getIri(object), DC+"#description", value);
+			}
+		}
 	}
 }

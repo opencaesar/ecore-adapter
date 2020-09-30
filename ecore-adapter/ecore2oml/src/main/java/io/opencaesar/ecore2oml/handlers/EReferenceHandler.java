@@ -5,6 +5,7 @@ import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.Util.getIri;
 import static io.opencaesar.ecore2oml.Util.getMappedName;
+import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.Util.memberExists;
 
@@ -125,6 +126,7 @@ public class EReferenceHandler implements ConversionHandler{
 					   getIri(object.getEReferenceType(), vocabulary, oml),
 					   RangeRestrictionKind.ALL);
 		}
+		handleNamedElementDoc(object, entity,oml,vocabulary);
 		return entity;
 	}
 

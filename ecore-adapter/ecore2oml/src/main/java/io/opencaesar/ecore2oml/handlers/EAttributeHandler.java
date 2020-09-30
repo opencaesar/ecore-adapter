@@ -5,6 +5,7 @@ import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.Util.getIri;
 import static io.opencaesar.ecore2oml.Util.getMappedName;
+import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.Util.memberExists;
 
@@ -104,6 +105,7 @@ public class EAttributeHandler implements ConversionHandler {
 		}
 		//addLabelAnnotatiopnIfNeeded(property, name, oml, vocabulary);
 		addLabelAnnotatiopnIfNeeded(object,property, oml, vocabulary);
+		handleNamedElementDoc(object, property,oml,vocabulary);
 		return property;
 	}
 

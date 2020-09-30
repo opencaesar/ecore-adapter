@@ -8,6 +8,7 @@ import static io.opencaesar.ecore2oml.Util.getMappedName;
 import static io.opencaesar.ecore2oml.Util.getPrefix;
 import static io.opencaesar.ecore2oml.Util.getSeparator;
 import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
+import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -154,6 +155,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 			}
 		}
 		addLabelAnnotatiopnIfNeeded(entity, name,oml,vocabulary);
+		handleNamedElementDoc(object, entity,oml,vocabulary);
 		object.getEStructuralFeatures().stream().forEach(f -> doSwitch(f));
 		
 		return entity;
