@@ -65,6 +65,16 @@ public class Util {
 		return getAnnotationValue(object, kind) != null;
 	}
 	
+	public static EAnnotation getAnnotation(EModelElement object, String source) {
+		final EAnnotation[] retVal = new EAnnotation[1];
+		object.getEAnnotations().forEach(annotation->{
+			if (source.equals(annotation.getSource())) {
+				retVal[0] = annotation;
+			}
+		});
+		return retVal[0];
+	}
+	
 	public static void addGeneratedAnnotation(Member object, OmlWriter oml, Vocabulary vocabulary) {
 		Literal generated = oml.createQuotedLiteral(vocabulary, "generated", null, null);
 		oml.addAnnotation(vocabulary, OmlRead.getIri(object), DC+"/source", generated);
