@@ -23,6 +23,7 @@ import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollisionInfo;
 import io.opencaesar.oml.AnnotationProperty;
 import io.opencaesar.oml.Aspect;
+import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.Property;
 import io.opencaesar.oml.RangeRestrictionKind;
 import io.opencaesar.oml.ScalarProperty;
@@ -41,6 +42,9 @@ public class EAttributeHandler implements ConversionHandler {
 				.get(CollectionKind.CollidingAttributes);
 		CollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 		final boolean isFunctional = object.getUpperBound() == 1;
+		String containerIRI = getIri(object.getEContainingClass(), vocabulary, oml);
+		String attribuiteIRI =  getIri(object, vocabulary, oml);
+		String rangeIRI = getIri(object.getEType(), vocabulary, oml);
 		if (collisionInfo != null) {
 			// fix the rangeIRI
 			String realName = CONSTANTS.BASE_PREFIX + StringExtensions.toFirstUpper(name);
@@ -49,13 +53,19 @@ public class EAttributeHandler implements ConversionHandler {
 				collisionInfo.baseProperty = oml.addScalarProperty(vocabulary, name,
 						OmlRead.getIri(collisionInfo.baseConcept), rangeIri, isFunctional);
 			}
-			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml),
+			oml.addSpecializationAxiom(vocabulary, containerIRI,
 					OmlRead.getIri(collisionInfo.baseConcept));
 			if (!collisionInfo.sameType() && !collisionInfo.getName().equals("value")) {
 				oml.addScalarPropertyRangeRestrictionAxiom(vocabulary,
-						getIri(object.getEContainingClass(), vocabulary, oml),
+						containerIRI,
 						OmlRead.getIri(collisionInfo.baseProperty), rangeIri, RangeRestrictionKind.ALL);
 
+			}
+			if (!isFunctional && object.getUpperBound()!=-1) {
+				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,
+						CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
+				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,
+						CardinalityRestrictionKind.MIN, object.getLowerBound(), rangeIRI);
 			}
 			return collisionInfo.baseProperty;
 		}

@@ -21,6 +21,7 @@ import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
 import io.opencaesar.oml.Aspect;
+import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.ForwardRelation;
 import io.opencaesar.oml.RangeRestrictionKind;
 import io.opencaesar.oml.RelationEntity;
@@ -65,6 +66,8 @@ public class EReferenceHandler implements ConversionHandler{
 			return null;
 		}
 		
+		String refIRI = getIri(object, vocabulary, oml);
+		String rangeIRI = getIri(object.getEType(), vocabulary, oml);
 		
 		if (collisionInfo!=null) {
 			// create the base source, and target
@@ -81,6 +84,8 @@ public class EReferenceHandler implements ConversionHandler{
 			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml), sourceIri);
 			oml.addSpecializationAxiom(vocabulary, getIri(object.getEReferenceType(), vocabulary, oml), targetIri);
 		}
+		
+		
 		
 		// the relation entity's source
 		if (isAnnotationSet(object, AnnotationKind.domainName)) {
@@ -126,6 +131,14 @@ public class EReferenceHandler implements ConversionHandler{
 					   getIri(object.getEReferenceType(), vocabulary, oml),
 					   RangeRestrictionKind.ALL);
 		}
+		
+		if (!isFunctional && object.getUpperBound()!=-1) {
+			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
+					CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
+			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
+					CardinalityRestrictionKind.MIN, object.getLowerBound(), rangeIRI);
+		}
+		
 		handleNamedElementDoc(object, entity,oml,vocabulary);
 		return entity;
 	}
