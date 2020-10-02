@@ -19,6 +19,7 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.CONSTANTS;
+import io.opencaesar.ecore2oml.FilterUtil;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollisionInfo;
 import io.opencaesar.oml.AnnotationProperty;
@@ -79,18 +80,11 @@ public class EAttributeHandler implements ConversionHandler {
 		EAttribute object = (EAttribute) oObject;
 		final EClass domain = object.getEContainingClass();
 		final EDataType range = object.getEAttributeType();
-		final boolean isDerived = object.isDerived();
-
-		if (isDerived) {
+		
+		if (FilterUtil.shouldFilter(object)) {
 			return null;
 		}
-		if (isAnnotationSet(object, AnnotationKind.ignore)) {
-			return null;
-		}
-		if (isAnnotationSet(range, AnnotationKind.ignore)) {
-			return null;
-		}
-
+		
 		// find the domain
 		String domainIri = getIri(domain, vocabulary, oml);
 		if (isAnnotationSet(object, AnnotationKind.domainName)) {

@@ -1,7 +1,6 @@
 package io.opencaesar.ecore2oml.preprocessors;
 
 import static io.opencaesar.ecore2oml.Util.getMappedName;
-import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,24 +13,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 
-import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.FilterUtil;
 
 public class EAttributeConversionParticipant extends ConversionParticipant {
 
 	private Logger LOGGER = LogManager.getLogger(EAttributeConversionParticipant.class);
-
-	private boolean shouldIngore(EAttribute eAttr) {
-		if (eAttr.isDerived()) {
-			return true;
-		}
-		if (isAnnotationSet(eAttr, AnnotationKind.ignore)) {
-			return true;
-		}
-		if (isAnnotationSet(eAttr.getEAttributeType(), AnnotationKind.ignore)) {
-			return true;
-		}
-		return false;
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,7 +25,7 @@ public class EAttributeConversionParticipant extends ConversionParticipant {
 		// EAttribute
 		EAttribute eAttr = (EAttribute) element;
 		final String name = getMappedName(eAttr);
-		if (shouldIngore(eAttr)) {
+		if (FilterUtil.shouldFilter(eAttr)) {
 			return;
 		}
 

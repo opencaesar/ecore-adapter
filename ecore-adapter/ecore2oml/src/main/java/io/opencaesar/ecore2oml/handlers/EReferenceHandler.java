@@ -21,6 +21,7 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.CONSTANTS;
+import io.opencaesar.ecore2oml.FilterUtil;
 import io.opencaesar.ecore2oml.Util;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
@@ -39,29 +40,9 @@ public class EReferenceHandler implements ConversionHandler{
 	
 	private static final String SUBSETS = "subsets";
 	
-
 	private String getRelationShipName(EReference eRef) {
 		final String name = getMappedName(eRef);
 		return StringExtensions.toFirstUpper(name) + CONSTANTS.EREFERENCE_POSTFIX;
-	}
-	
-	private boolean shouldFilter(EReference object) {
-		boolean bRetVal  = false;
-		if (object.isDerived()) {
-			bRetVal = true;
-		}
-		if (isAnnotationSet(object, AnnotationKind.ignore)) {
-			bRetVal = true;
-		}
-		if (isAnnotationSet(object.getEReferenceType(), AnnotationKind.ignore)) {
-			bRetVal = true;
-		}
-		if (isAnnotationSet(object, AnnotationKind.isRelationSource) || 
-			isAnnotationSet(object, AnnotationKind.isRelationTarget)) {
-			bRetVal = true;
-		}
-		
-		return bRetVal;
 	}
 	
 	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
@@ -69,7 +50,7 @@ public class EReferenceHandler implements ConversionHandler{
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
 		final String entityName =  getRelationShipName(object);
-		if (shouldFilter(object)) {
+		if (FilterUtil.shouldFilter(object)) {
 			addFiltered(object,collections);
 			return null;
 		}
@@ -88,7 +69,6 @@ public class EReferenceHandler implements ConversionHandler{
 
 
 		if (opposite!=null && collidingEOpposite!=null &&  collidingEOpposite.shouldSkip(object)) {
-			addFiltered(object,collections);
 			return null;
 		}
 		
@@ -199,6 +179,16 @@ public class EReferenceHandler implements ConversionHandler{
 				if (subsetAnnotaion!=null) {
 					subsetAnnotaion.getReferences().forEach(superSet -> {
 						EReference superRef = (EReference)superSet;
+						if (superRef.getEOpposite()!=null) {
+							// check for replaced
+							CollidingEOppositeData collidingEOpposite = (CollidingEOppositeData) collections.get(CollectionKind.CollidingEOppositeRefernces);
+							if (collidingEOpposite!=null) {
+								EReference mappedRef = collidingEOpposite.getMappedRef(superRef);
+								if (mappedRef!=null) {
+									superRef = mappedRef;
+								}
+							}
+						}
 						if (!isFiltered(superRef,collections)) {
 							String superSetRelationName = getRelationShipName(superRef);
 							String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName);

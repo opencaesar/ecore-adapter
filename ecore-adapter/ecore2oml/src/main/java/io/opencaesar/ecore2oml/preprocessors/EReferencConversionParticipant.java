@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.FilterUtil;
 
 public class EReferencConversionParticipant extends ConversionParticipant {
 
@@ -24,7 +25,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 	public void handle(EObject element, Map<CollectionKind, Object> collections) {
 		EReference eRef = (EReference) element;
 		final String name = getMappedName(eRef);
-		if (shouldIngore(eRef)) {
+		if (FilterUtil.shouldFilter(eRef)) {
 			return;
 		}
 		if (eRef.getEOpposite() == null) {
@@ -61,20 +62,6 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		}
 		info.add(eRef);
 		LOGGER.debug(name);
-	}
-
-	private boolean shouldIngore(EReference eRef) {
-		if (eRef.isDerived()) {
-			return true;
-		}
-		if (isAnnotationSet(eRef, AnnotationKind.ignore) || isAnnotationSet(eRef, AnnotationKind.isRelationSource)
-				|| isAnnotationSet(eRef, AnnotationKind.isRelationTarget)) {
-			return true;
-		}
-		if (isAnnotationSet(eRef.getEReferenceType(), AnnotationKind.ignore)) {
-			return true;
-		}
-		return false;
 	}
 
 	private void _postProcessEOpposite(Map<CollectionKind, Object> collections) {

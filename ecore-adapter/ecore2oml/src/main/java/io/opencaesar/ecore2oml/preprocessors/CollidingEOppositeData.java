@@ -11,7 +11,7 @@ import org.eclipse.emf.ecore.EReference;
 public class CollidingEOppositeData {
 	Map<TwoERefKey, Set<EReference>> forward = new HashMap<>();
 	private Set<EReference> toSkip = new HashSet<>();
-
+	private Map<EReference,EReference> eRefToReplacement = new HashMap<EReference, EReference>();
 	public CollidingEOppositeData() {
 
 	}
@@ -66,9 +66,17 @@ public class CollidingEOppositeData {
 			if (value.size()>1) {
 				EReference ref = getMainRef(value);
 				value.remove(ref);
-				toSkip.addAll(value);
+				assert value.size()<=1;
+				value.forEach(replacedEef -> {
+					eRefToReplacement.put(replacedEef, ref);
+					toSkip.add(replacedEef);
+				});
 			}
 		});
+	}
+	
+	public EReference getMappedRef(EReference replacedRef) {
+		return eRefToReplacement.get(replacedRef);
 	}
 
 	public int size() {
