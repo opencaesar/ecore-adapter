@@ -62,6 +62,7 @@ public class EAttributeHandler implements ConversionHandler {
 
 			}
 			if (!isFunctional && object.getUpperBound()!=-1) {
+				// TODO: remove the range IRI
 				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,
 						CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
 				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,

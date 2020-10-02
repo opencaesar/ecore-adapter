@@ -133,6 +133,7 @@ public class EReferenceHandler implements ConversionHandler{
 		}
 		
 		if (!isFunctional && object.getUpperBound()!=-1) {
+			// TODO: remove the range IRI
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
 					CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
