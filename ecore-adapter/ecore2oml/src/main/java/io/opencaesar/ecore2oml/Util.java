@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
@@ -34,13 +35,19 @@ public class Util {
 	private static final Object DOCUMENTATION = "documentation"; 
 
 	public static String getMappedName(ENamedElement object) {
+		return getMappedName(object,false);
+	}
+	
+	public static String getMappedName(ENamedElement object, boolean CAP_ALL_SEGMENTS) {
 		String defaultValue =  object.getName();
 		// make default value qualified in the case of eStructural Features
 		if (object instanceof EStructuralFeature) {
 			EStructuralFeature eFeature = (EStructuralFeature)object;
 			EClass container = eFeature.getEContainingClass();
 			if (container!=null) {
-				defaultValue = defaultValue + CONSTANTS.NAME_SEPERATOR + container.getName();
+				defaultValue =  (!CAP_ALL_SEGMENTS ? StringExtensions.toFirstLower(container.getName()) : container.getName()) +
+								CONSTANTS.NAME_SEPERATOR +
+								(CAP_ALL_SEGMENTS ? StringExtensions.toFirstUpper(defaultValue) : defaultValue );
 			}
 		}
 		return getAnnotationValue(object, AnnotationKind.name, defaultValue);

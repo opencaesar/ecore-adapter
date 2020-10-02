@@ -17,7 +17,6 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.CONSTANTS;
@@ -41,8 +40,7 @@ public class EReferenceHandler implements ConversionHandler{
 	private static final String SUBSETS = "subsets";
 	
 	private String getRelationShipName(EReference eRef) {
-		final String name = getMappedName(eRef);
-		return StringExtensions.toFirstUpper(name) + CONSTANTS.EREFERENCE_POSTFIX;
+		return  getMappedName(eRef,true);
 	}
 	
 	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
