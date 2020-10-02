@@ -9,14 +9,19 @@ import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.Util.memberExists;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.CONSTANTS;
+import io.opencaesar.ecore2oml.Util;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
@@ -32,22 +37,43 @@ import io.opencaesar.oml.util.OmlWriter;
 
 public class EReferenceHandler implements ConversionHandler{
 	
-	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections) {
-		EReference object = (EReference)eObject;
+	private static final String SUBSETS = "subsets";
+	
+
+	private String getRelationShipName(EReference eRef) {
+		final String name = getMappedName(eRef);
+		return StringExtensions.toFirstUpper(name) + CONSTANTS.EREFERENCE_POSTFIX;
+	}
+	
+	private boolean shouldFilter(EReference object) {
+		boolean bRetVal  = false;
 		if (object.isDerived()) {
-			return null;
+			bRetVal = true;
 		}
 		if (isAnnotationSet(object, AnnotationKind.ignore)) {
-			return null;
+			bRetVal = true;
 		}
 		if (isAnnotationSet(object.getEReferenceType(), AnnotationKind.ignore)) {
-			return null;
+			bRetVal = true;
 		}
 		if (isAnnotationSet(object, AnnotationKind.isRelationSource) || 
 			isAnnotationSet(object, AnnotationKind.isRelationTarget)) {
+			bRetVal = true;
+		}
+		
+		return bRetVal;
+	}
+	
+	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
+			Map<CollectionKind, Object> collections) {
+		EReference object = (EReference)eObject;
+		final String name = getMappedName(object);
+		final String entityName =  getRelationShipName(object);
+		if (shouldFilter(object)) {
+			addFiltered(object,collections);
 			return null;
 		}
+		
 		
 		String sourceIri = getIri(object.getEContainingClass(), vocabulary, oml);
 		String targetIri = getIri(object.getEReferenceType(), vocabulary, oml);
@@ -57,12 +83,12 @@ public class EReferenceHandler implements ConversionHandler{
 		@SuppressWarnings("unchecked")
 		Map<String, RefCollisionInfo> names = (Map<String, RefCollisionInfo>) collections.get(CollectionKind.CollidingRefernces);
 		CollidingEOppositeData collidingEOpposite = (CollidingEOppositeData) collections.get(CollectionKind.CollidingEOppositeRefernces);
-		final String name = getMappedName(object);
-		final String entityName =  StringExtensions.toFirstUpper(name) + CONSTANTS.EREFERENCE_POSTFIX;
+		
 		RefCollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 
 
 		if (opposite!=null && collidingEOpposite!=null &&  collidingEOpposite.shouldSkip(object)) {
+			addFiltered(object,collections);
 			return null;
 		}
 		
@@ -132,6 +158,73 @@ public class EReferenceHandler implements ConversionHandler{
 					   RangeRestrictionKind.ALL);
 		}
 		
+		handleCardinality(vocabulary, oml, object, sourceIri, isFunctional, refIRI, rangeIRI);
+		handleNamedElementDoc(object, entity,oml,vocabulary);
+		handleSubsets(object, entity,oml,vocabulary,collections);
+		return entity;
+	}
+
+	private void addFiltered(EReference object, Map<CollectionKind, Object> collections) {
+		@SuppressWarnings("unchecked")
+		Set<EObject> filtered = (Set<EObject>)collections.get(CollectionKind.Filtered);
+		if (filtered==null) {
+			filtered = new HashSet<EObject>();
+			collections.put(CollectionKind.Filtered, filtered);
+		}
+		filtered.add(object);
+	}
+
+	private void handleSubsets(EReference object, RelationEntity entity, OmlWriter oml, Vocabulary vocabulary,Map<CollectionKind, Object> collections) {
+		EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
+		if (subsetAnnotaion!=null) {
+			@SuppressWarnings("unchecked")
+			Set<EReference> subSets = (Set<EReference>)collections.get(CollectionKind.SubSets);
+			if (subSets==null) {
+				subSets = new LinkedHashSet<EReference>();
+				collections.put(CollectionKind.SubSets, subSets);
+			}
+			subSets.add(object);
+		}
+	}
+	
+	@Override
+	public void postConvert(Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections) {
+		@SuppressWarnings("unchecked")
+		Set<EReference> subSets = (Set<EReference>)collections.get(CollectionKind.SubSets);
+		if (subSets!=null) {
+			subSets.forEach(object -> {
+				EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
+				String subSetRelationName = getRelationShipName(object);
+				String subSetIRI = Util.buildIRIFromClassName(object.getEType().getEPackage(), subSetRelationName);
+				if (subsetAnnotaion!=null) {
+					subsetAnnotaion.getReferences().forEach(superSet -> {
+						EReference superRef = (EReference)superSet;
+						if (!isFiltered(superRef,collections)) {
+							String superSetRelationName = getRelationShipName(superRef);
+							String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName);
+							oml.addSpecializationAxiom(vocabulary, subSetIRI, superSetIRI);
+						}
+					});
+				}
+			});
+			
+		}
+		
+	}
+	
+
+
+	private boolean isFiltered(EObject object, Map<CollectionKind, Object> collections) {
+		@SuppressWarnings("unchecked")
+		Set<EObject> filtered = (Set<EObject>)collections.get(CollectionKind.Filtered);
+		if (filtered!=null) {
+			return filtered.contains(object);
+		}
+		return false;
+	}
+
+	private void handleCardinality(Vocabulary vocabulary, OmlWriter oml, EReference object, String sourceIri,
+			final boolean isFunctional, String refIRI, String rangeIRI) {
 		if (!isFunctional && object.getUpperBound()!=-1) {
 			// TODO: remove the range IRI
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
@@ -139,9 +232,6 @@ public class EReferenceHandler implements ConversionHandler{
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
 					CardinalityRestrictionKind.MIN, object.getLowerBound(), rangeIRI);
 		}
-		
-		handleNamedElementDoc(object, entity,oml,vocabulary);
-		return entity;
 	}
 
 }

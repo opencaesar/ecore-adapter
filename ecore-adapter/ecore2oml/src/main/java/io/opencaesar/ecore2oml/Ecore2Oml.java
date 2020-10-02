@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -85,6 +86,14 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 			preProcessor.finished();
 		}
 		doSwitch(ePackage);
+		handlersPostProcess();
+	}
+
+	private void handlersPostProcess() {
+		Set<Entry<Integer, ConversionHandler>> entries = handlers.entrySet();
+		for (Entry<Integer, ConversionHandler> entry : entries) {
+			entry.getValue().postConvert(vocabulary, oml, collections);
+		}
 	}
 
 	@Override

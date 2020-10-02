@@ -14,5 +14,10 @@ public interface ConversionHandler {
 	public EObject convert(EObject object, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections) ;
 	
+	default public void postConvert(Vocabulary vocabulary, OmlWriter oml,
+			Map<CollectionKind, Object> collections) {
+		// No OP
+	}
+	
 
 }

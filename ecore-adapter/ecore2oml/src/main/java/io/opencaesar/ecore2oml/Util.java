@@ -134,6 +134,11 @@ public class Util {
 		}
 		return nsURI;
 	}	
+	
+	
+	public static String buildIRIFromClassName(EPackage ePackage, String name) {
+		return getIri(ePackage)+ getSeparator(ePackage)+name;
+	}
 
 	public static String getIri(EClass object, Vocabulary vocabulary, OmlWriter oml) {
 		final EPackage ePackage = object.getEPackage();  
