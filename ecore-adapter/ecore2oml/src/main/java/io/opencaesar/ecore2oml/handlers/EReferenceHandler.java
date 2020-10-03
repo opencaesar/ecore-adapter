@@ -67,6 +67,7 @@ public class EReferenceHandler implements ConversionHandler{
 
 
 		if (opposite!=null && collidingEOpposite!=null &&  collidingEOpposite.shouldSkip(object)) {
+			addFiltered(object,collections);
 			return null;
 		}
 		
@@ -177,16 +178,6 @@ public class EReferenceHandler implements ConversionHandler{
 				if (subsetAnnotaion!=null) {
 					subsetAnnotaion.getReferences().forEach(superSet -> {
 						EReference superRef = (EReference)superSet;
-						if (superRef.getEOpposite()!=null) {
-							// check for replaced
-							CollidingEOppositeData collidingEOpposite = (CollidingEOppositeData) collections.get(CollectionKind.CollidingEOppositeRefernces);
-							if (collidingEOpposite!=null) {
-								EReference mappedRef = collidingEOpposite.getMappedRef(superRef);
-								if (mappedRef!=null) {
-									superRef = mappedRef;
-								}
-							}
-						}
 						if (!isFiltered(superRef,collections)) {
 							String superSetRelationName = getRelationShipName(superRef);
 							String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName);
