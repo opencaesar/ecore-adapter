@@ -32,6 +32,7 @@ import org.eclipse.emf.ecore.util.EcoreSwitch;
 import io.opencaesar.ecore2oml.handlers.ConversionHandler;
 import io.opencaesar.ecore2oml.handlers.EAttributeHandler;
 import io.opencaesar.ecore2oml.handlers.EClassHandler;
+import io.opencaesar.ecore2oml.handlers.EDataTypeHandler;
 import io.opencaesar.ecore2oml.handlers.EReferenceHandler;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.ConversionPreProcessing;
@@ -39,7 +40,6 @@ import io.opencaesar.ecore2oml.preprocessors.EAttributeConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EPackageConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EReferencConversionParticipant;
 import io.opencaesar.oml.EnumeratedScalar;
-import io.opencaesar.oml.FacetedScalar;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.Vocabulary;
@@ -127,12 +127,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	@Override
 	public EObject caseEDataType(EDataType object) {
-		final String name = getMappedName(object);
-
-		final FacetedScalar scalar = oml.addFacetedScalar(vocabulary, name, null, null, null, null, null, null, null, null, null);
-		addLabelAnnotatiopnIfNeeded(scalar, name,oml,vocabulary);
-		
-		return scalar;
+		return handlers.get(EcorePackage.EDATA_TYPE).convert(object, vocabulary, oml, collections);
 	}
 
 	@Override
@@ -178,6 +173,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	
 	private static void initHandlers() {
 		// TODO : get classes from file if needed
+		handlers.put(EcorePackage.EDATA_TYPE, new EDataTypeHandler());
 		handlers.put(EcorePackage.EATTRIBUTE, new EAttributeHandler());
 		handlers.put(EcorePackage.EREFERENCE, new EReferenceHandler());
 		handlers.put(EcorePackage.ECLASS, new EClassHandler());
