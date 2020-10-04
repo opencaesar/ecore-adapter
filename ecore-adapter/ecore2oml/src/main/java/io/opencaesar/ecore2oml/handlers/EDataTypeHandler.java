@@ -1,7 +1,6 @@
 package io.opencaesar.ecore2oml.handlers;
 
 import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
-import static io.opencaesar.ecore2oml.Util.getMappedName;
 
 import java.util.Map;
 
