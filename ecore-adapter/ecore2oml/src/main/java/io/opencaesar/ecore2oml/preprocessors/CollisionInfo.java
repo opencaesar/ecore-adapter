@@ -42,7 +42,7 @@ public class CollisionInfo {
 		this.name = name;
 	}
 
-	public void finalize() {
+	public void finish() {
 		// deal with type
 		if (!sameType()) {
 			for (EClassifier type : types) {

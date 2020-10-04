@@ -37,7 +37,7 @@ public class RefCollisionInfo {
 		this.name = name;
 	}
 
-	public void finalize() {
+	public void finish() {
 		// deal with type
 	}
 

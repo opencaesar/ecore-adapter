@@ -59,7 +59,7 @@ public class EAttributeConversionParticipant extends ConversionParticipant {
 			for (Entry<String, CollisionInfo> entry : entries) {
 				String name = entry.getKey();
 				CollisionInfo info = entry.getValue();
-				info.finalize();
+				info.finish();
 				if (info.size() > 1) {
 					LOGGER.debug(name + " ==> " + info);
 				} else {

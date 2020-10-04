@@ -71,7 +71,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		}
 		int before = collInfo.size();
 		Set<TwoERefKey> cleanMe = new HashSet<>();
-		collInfo.finalize();
+		collInfo.finish();
 		Set<Entry<TwoERefKey, Set<EReference>>> enteries = collInfo.forward.entrySet();
 		for (Entry<TwoERefKey, Set<EReference>> entry : enteries) {
 			TwoERefKey key = entry.getKey();
@@ -105,7 +105,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 			for (Entry<String, RefCollisionInfo> entry : entries) {
 				String name = entry.getKey();
 				RefCollisionInfo info = entry.getValue();
-				info.finalize();
+				info.finish();
 				if (info.size() > 1) {
 					LOGGER.debug(name + " ==> " + info);
 				} else {

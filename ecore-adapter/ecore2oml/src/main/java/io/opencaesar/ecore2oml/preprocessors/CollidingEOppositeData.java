@@ -106,7 +106,7 @@ public class CollidingEOppositeData {
 		return false;
 	}
 
-	public void finalize() {
+	public void finish() {
 		// deal with type
 		// reflect the ERef Election Rules
 		forward.entrySet().forEach(entry -> {
