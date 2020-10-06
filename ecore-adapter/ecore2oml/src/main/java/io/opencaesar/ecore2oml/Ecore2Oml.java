@@ -1,7 +1,6 @@
 package io.opencaesar.ecore2oml;
 
 import static io.opencaesar.ecore2oml.NameSpaces.OWL;
-import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
 import static io.opencaesar.ecore2oml.util.Util.getPrefix;
@@ -34,13 +33,12 @@ import io.opencaesar.ecore2oml.handlers.EAttributeHandler;
 import io.opencaesar.ecore2oml.handlers.EClassHandler;
 import io.opencaesar.ecore2oml.handlers.EDataTypeHandler;
 import io.opencaesar.ecore2oml.handlers.EReferenceHandler;
+import io.opencaesar.ecore2oml.handlers.EEnumHandler;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.ConversionPreProcessing;
 import io.opencaesar.ecore2oml.preprocessors.EAttributeConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EPackageConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EReferencConversionParticipant;
-import io.opencaesar.oml.EnumeratedScalar;
-import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlWriter;
@@ -111,13 +109,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	@Override
 	public EObject caseEEnum(EEnum object) {
-		final String name = getMappedName(object);
-		final Literal[] literals = object.getELiterals().stream().map(i -> doSwitch(i)).toArray(Literal[]::new);
-
-		final EnumeratedScalar scalar = oml.addEnumeratedScalar(vocabulary, name, literals);
-		addLabelAnnotatiopnIfNeeded(scalar, name,oml,vocabulary);
-		
-		return scalar;
+		return handlers.get(EcorePackage.EENUM).convert(object, vocabulary, oml, collections,this);
 	}
 	
 	@Override
@@ -127,27 +119,25 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	@Override
 	public EObject caseEDataType(EDataType object) {
-		return handlers.get(EcorePackage.EDATA_TYPE).convert(object, vocabulary, oml, collections);
+		return handlers.get(EcorePackage.EDATA_TYPE).convert(object, vocabulary, oml, collections,this);
 	}
 
 	@Override
 	public EObject caseEClass(EClass object) {
-		EObject entity = handlers.get(EcorePackage.ECLASS).convert(object, vocabulary, oml, collections);
-		object.getEStructuralFeatures().stream().forEach(f -> doSwitch(f));
-		return entity;
+		return handlers.get(EcorePackage.ECLASS).convert(object, vocabulary, oml, collections,this);
 	}
 
 
 	@Override
 	public EObject caseEAttribute(EAttribute object) {
-		return handlers.get(EcorePackage.EATTRIBUTE).convert(object, vocabulary, oml, collections);
+		return handlers.get(EcorePackage.EATTRIBUTE).convert(object, vocabulary, oml, collections,this);
 	}
 
 	
 	
 	@Override
 	public EObject caseEReference(EReference object) {
-		return handlers.get(EcorePackage.EREFERENCE).convert(object, vocabulary, oml, collections);
+		return handlers.get(EcorePackage.EREFERENCE).convert(object, vocabulary, oml, collections,this);
 	}
 
 	//----------------------------------------------------------------------
@@ -173,6 +163,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	
 	private static void initHandlers() {
 		// TODO : get classes from file if needed
+		handlers.put(EcorePackage.EENUM, new EEnumHandler());
 		handlers.put(EcorePackage.EDATA_TYPE, new EDataTypeHandler());
 		handlers.put(EcorePackage.EATTRIBUTE, new EAttributeHandler());
 		handlers.put(EcorePackage.EREFERENCE, new EReferenceHandler());

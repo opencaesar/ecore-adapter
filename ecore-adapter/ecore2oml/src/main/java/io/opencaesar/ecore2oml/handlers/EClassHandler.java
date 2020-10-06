@@ -1,10 +1,8 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
-import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 
 import java.util.Collection;
@@ -22,6 +20,7 @@ import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.EcoreSwitch;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
@@ -43,13 +42,11 @@ public class EClassHandler implements ConversionHandler {
 	static private Logger LOGGER = LogManager.getLogger(EClassHandler.class);
 
 	@Override
-	public EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections) {
+	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
+			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
 		EClass object = (EClass) eObject;
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;
-		final String name = getMappedName(object);
-
 		Entity entity = null;
 		if (isAnnotationSet(object, AnnotationKind.isRelationEntity)) {
 			entity = convertEClassToRelationEntity(object, oml, vocabulary);
@@ -64,11 +61,10 @@ public class EClassHandler implements ConversionHandler {
 				oml.addSpecializationAxiom(vocabulary, OmlRead.getIri(entity), superIri);
 			}
 		}
-		addLabelAnnotatiopnIfNeeded(entity, name, oml, vocabulary);
 		if (isDuplicate) {
 			handleDuplicate(object, entity, annotation, oml, vocabulary);
 		}
-		handleNamedElementDoc(object, entity, oml, vocabulary);
+		object.getEStructuralFeatures().stream().forEach(f -> visitor.doSwitch(f));
 		return entity;
 	}
 

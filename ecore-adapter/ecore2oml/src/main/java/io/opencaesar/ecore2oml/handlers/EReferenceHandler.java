@@ -5,7 +5,6 @@ import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
-import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.util.Util.memberExists;
 
@@ -17,6 +16,7 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.util.EcoreSwitch;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
@@ -43,8 +43,8 @@ public class EReferenceHandler implements ConversionHandler{
 		return  getMappedName(eRef,true);
 	}
 	
-	public  EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections) {
+	public  EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
+			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
 		final String entityName =  getRelationShipName(object);
@@ -136,9 +136,7 @@ public class EReferenceHandler implements ConversionHandler{
 					   getIri(object.getEReferenceType(), vocabulary, oml),
 					   RangeRestrictionKind.ALL);
 		}
-		
 		handleCardinality(vocabulary, oml, object, sourceIri, refIRI, rangeIRI);
-		handleNamedElementDoc(object, entity,oml,vocabulary);
 		handleSubsets(object, entity,oml,vocabulary,collections);
 		return entity;
 	}

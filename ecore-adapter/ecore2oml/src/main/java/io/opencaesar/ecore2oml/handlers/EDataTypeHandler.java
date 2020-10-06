@@ -1,11 +1,10 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
-
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreSwitch;
 
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.IRIConstants;
@@ -18,7 +17,7 @@ import io.opencaesar.oml.util.OmlWriter;
 public class EDataTypeHandler implements ConversionHandler{
 
 	@Override
-	public EObject convert(EObject eObject, Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections) {
+	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
 		EDataType object = (EDataType)eObject;
 		final String name = Util.getMappedName(object);
 		final FacetedScalar scalar = oml.addFacetedScalar(vocabulary, name, null, null, null, null, null, null, null, null, null);
@@ -42,8 +41,7 @@ public class EDataTypeHandler implements ConversionHandler{
 		}
 		String baseIRI = IRIConstants.XSD_IRI + base;
 		oml.addSpecializationAxiom(vocabulary, OmlRead.getIri(scalar), baseIRI);
-		addLabelAnnotatiopnIfNeeded(scalar, name,oml,vocabulary);
-		return null;
+		return scalar;
 	}
 
 }

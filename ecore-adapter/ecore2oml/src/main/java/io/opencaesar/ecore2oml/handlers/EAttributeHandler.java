@@ -1,11 +1,9 @@
 package io.opencaesar.ecore2oml.handlers;
 
 import static io.opencaesar.ecore2oml.util.Util.addGeneratedAnnotation;
-import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
 import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
-import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
 import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.util.Util.memberExists;
 
@@ -15,6 +13,7 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreSwitch;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
@@ -76,8 +75,8 @@ public class EAttributeHandler implements ConversionHandler {
 	}
 
 	@Override
-	public EObject convert(EObject oObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections) {
+	public EObject doConvert(EObject oObject, Vocabulary vocabulary, OmlWriter oml,
+			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
 		EAttribute object = (EAttribute) oObject;
 		final EClass domain = object.getEContainingClass();
 		final EDataType range = object.getEAttributeType();
@@ -109,9 +108,6 @@ public class EAttributeHandler implements ConversionHandler {
 		} else {
 			property = handleEAttributeToScalarProperty(object, domainIri, rangeIri, oml, vocabulary, collections);
 		}
-		//addLabelAnnotatiopnIfNeeded(property, name, oml, vocabulary);
-		addLabelAnnotatiopnIfNeeded(object,property, oml, vocabulary);
-		handleNamedElementDoc(object, property,oml,vocabulary);
 		return property;
 	}
 
