@@ -1,15 +1,15 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
 
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 
-import io.opencaesar.ecore2oml.IRICONSTANTS;
-import io.opencaesar.ecore2oml.Util;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
+import io.opencaesar.ecore2oml.util.IRIConstants;
+import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.FacetedScalar;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlRead;
@@ -40,7 +40,7 @@ public class EDataTypeHandler implements ConversionHandler{
 				base = "string";
 				break;
 		}
-		String baseIRI = IRICONSTANTS.XSD_IRI + base;
+		String baseIRI = IRIConstants.XSD_IRI + base;
 		oml.addSpecializationAxiom(vocabulary, OmlRead.getIri(scalar), baseIRI);
 		addLabelAnnotatiopnIfNeeded(scalar, name,oml,vocabulary);
 		return null;

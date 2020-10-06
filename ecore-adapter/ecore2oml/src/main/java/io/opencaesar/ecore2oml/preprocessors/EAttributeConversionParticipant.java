@@ -1,6 +1,6 @@
 package io.opencaesar.ecore2oml.preprocessors;
 
-import static io.opencaesar.ecore2oml.Util.getMappedName;
+import static io.opencaesar.ecore2oml.util.Util.getMappedName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 
-import io.opencaesar.ecore2oml.FilterUtil;
+import io.opencaesar.ecore2oml.util.FilterUtil;
 
 public class EAttributeConversionParticipant extends ConversionParticipant {
 

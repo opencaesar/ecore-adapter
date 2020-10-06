@@ -1,6 +1,6 @@
-package io.opencaesar.ecore2oml;
+package io.opencaesar.ecore2oml.util;
 
-public class CONSTANTS {
+public class Constants {
 	
 	public static final String NAME_SEPERATOR = "_";
 	public static final String BASE_PREFIX = "Base";

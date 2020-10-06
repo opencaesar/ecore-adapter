@@ -1,11 +1,11 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
-import static io.opencaesar.ecore2oml.Util.getAnnotationValue;
-import static io.opencaesar.ecore2oml.Util.getIri;
-import static io.opencaesar.ecore2oml.Util.getMappedName;
-import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
-import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
+import static io.opencaesar.ecore2oml.util.Util.getIri;
+import static io.opencaesar.ecore2oml.util.Util.getMappedName;
+import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
+import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -24,8 +24,8 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
-import io.opencaesar.ecore2oml.Util;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
+import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.Entity;
 import io.opencaesar.oml.RangeRestrictionKind;

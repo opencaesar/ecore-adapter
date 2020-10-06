@@ -1,13 +1,13 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.Util.addGeneratedAnnotation;
-import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
-import static io.opencaesar.ecore2oml.Util.getAnnotationValue;
-import static io.opencaesar.ecore2oml.Util.getIri;
-import static io.opencaesar.ecore2oml.Util.getMappedName;
-import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
-import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
-import static io.opencaesar.ecore2oml.Util.memberExists;
+import static io.opencaesar.ecore2oml.util.Util.addGeneratedAnnotation;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
+import static io.opencaesar.ecore2oml.util.Util.getIri;
+import static io.opencaesar.ecore2oml.util.Util.getMappedName;
+import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
+import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
+import static io.opencaesar.ecore2oml.util.Util.memberExists;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -19,12 +19,12 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
-import io.opencaesar.ecore2oml.CONSTANTS;
-import io.opencaesar.ecore2oml.FilterUtil;
-import io.opencaesar.ecore2oml.Util;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
+import io.opencaesar.ecore2oml.util.Constants;
+import io.opencaesar.ecore2oml.util.FilterUtil;
+import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.Aspect;
 import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.ForwardRelation;
@@ -77,10 +77,10 @@ public class EReferenceHandler implements ConversionHandler{
 		if (collisionInfo!=null) {
 			// create the base source, and target
 			if (collisionInfo.fromAspect==null) {
-				String baseNameFrom = CONSTANTS.BASE_PREFIX + entityName + CONSTANTS.FROM;
+				String baseNameFrom = Constants.BASE_PREFIX + entityName + Constants.FROM;
 				collisionInfo.fromAspect = oml.addAspect(vocabulary, baseNameFrom);
 				addGeneratedAnnotation(collisionInfo.fromAspect, oml, vocabulary);
-				String baseNameTo = CONSTANTS.BASE_PREFIX + entityName + CONSTANTS.To;
+				String baseNameTo = Constants.BASE_PREFIX + entityName + Constants.To;
 				collisionInfo.toAspect = oml.addAspect(vocabulary, baseNameTo);
 				addGeneratedAnnotation(collisionInfo.toAspect, oml, vocabulary);
 			}

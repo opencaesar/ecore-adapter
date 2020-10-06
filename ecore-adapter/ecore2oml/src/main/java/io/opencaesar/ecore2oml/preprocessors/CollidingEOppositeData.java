@@ -11,7 +11,7 @@ import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
-import io.opencaesar.ecore2oml.Util;
+import io.opencaesar.ecore2oml.util.Util;
 
 public class CollidingEOppositeData {
 	Map<TwoERefKey, Set<EReference>> forward = new HashMap<>();

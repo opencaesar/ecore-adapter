@@ -1,4 +1,4 @@
-package io.opencaesar.ecore2oml;
+package io.opencaesar.ecore2oml.util;
 
 import static io.opencaesar.ecore2oml.NameSpaces.DC;
 import static io.opencaesar.ecore2oml.NameSpaces.OML;
@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
+import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
 import io.opencaesar.oml.SeparatorKind;
@@ -43,7 +44,7 @@ public class Util {
 			EClass container = eFeature.getEContainingClass();
 			if (container!=null) {
 				defaultValue =  (!CAP_ALL_SEGMENTS ? StringExtensions.toFirstLower(container.getName()) : container.getName()) +
-								CONSTANTS.NAME_SEPERATOR +
+								Constants.NAME_SEPERATOR +
 								(CAP_ALL_SEGMENTS ? StringExtensions.toFirstUpper(defaultValue) : defaultValue );
 			}
 		}

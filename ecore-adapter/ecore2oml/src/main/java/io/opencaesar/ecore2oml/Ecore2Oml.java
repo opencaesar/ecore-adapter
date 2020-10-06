@@ -1,11 +1,11 @@
 package io.opencaesar.ecore2oml;
 
 import static io.opencaesar.ecore2oml.NameSpaces.OWL;
-import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
-import static io.opencaesar.ecore2oml.Util.getIri;
-import static io.opencaesar.ecore2oml.Util.getMappedName;
-import static io.opencaesar.ecore2oml.Util.getPrefix;
-import static io.opencaesar.ecore2oml.Util.getSeparator;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.getIri;
+import static io.opencaesar.ecore2oml.util.Util.getMappedName;
+import static io.opencaesar.ecore2oml.util.Util.getPrefix;
+import static io.opencaesar.ecore2oml.util.Util.getSeparator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;

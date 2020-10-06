@@ -1,9 +1,11 @@
-package io.opencaesar.ecore2oml;
+package io.opencaesar.ecore2oml.util;
 
-import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
+import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EReference;
+
+import io.opencaesar.ecore2oml.AnnotationKind;
 
 public class FilterUtil {
 	

@@ -1,13 +1,13 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.Util.addGeneratedAnnotation;
-import static io.opencaesar.ecore2oml.Util.addLabelAnnotatiopnIfNeeded;
-import static io.opencaesar.ecore2oml.Util.getAnnotationValue;
-import static io.opencaesar.ecore2oml.Util.getIri;
-import static io.opencaesar.ecore2oml.Util.getMappedName;
-import static io.opencaesar.ecore2oml.Util.handleNamedElementDoc;
-import static io.opencaesar.ecore2oml.Util.isAnnotationSet;
-import static io.opencaesar.ecore2oml.Util.memberExists;
+import static io.opencaesar.ecore2oml.util.Util.addGeneratedAnnotation;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
+import static io.opencaesar.ecore2oml.util.Util.getIri;
+import static io.opencaesar.ecore2oml.util.Util.getMappedName;
+import static io.opencaesar.ecore2oml.util.Util.handleNamedElementDoc;
+import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
+import static io.opencaesar.ecore2oml.util.Util.memberExists;
 
 import java.util.Map;
 
@@ -18,10 +18,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
-import io.opencaesar.ecore2oml.CONSTANTS;
-import io.opencaesar.ecore2oml.FilterUtil;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollisionInfo;
+import io.opencaesar.ecore2oml.util.Constants;
+import io.opencaesar.ecore2oml.util.FilterUtil;
 import io.opencaesar.oml.AnnotationProperty;
 import io.opencaesar.oml.Aspect;
 import io.opencaesar.oml.CardinalityRestrictionKind;
@@ -48,7 +48,7 @@ public class EAttributeHandler implements ConversionHandler {
 		String rangeIRI = getIri(object.getEType(), vocabulary, oml);
 		if (collisionInfo != null) {
 			// fix the rangeIRI
-			String realName = CONSTANTS.BASE_PREFIX + StringExtensions.toFirstUpper(name);
+			String realName = Constants.BASE_PREFIX + StringExtensions.toFirstUpper(name);
 			if (!memberExists(realName, vocabulary)) {
 				collisionInfo.baseConcept = oml.addAspect(vocabulary, realName);
 				collisionInfo.baseProperty = oml.addScalarProperty(vocabulary, name,
