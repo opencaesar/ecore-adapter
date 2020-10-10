@@ -1,6 +1,6 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.NameSpaces.OWL;
+import static io.opencaesar.ecore2oml.util.NameSpaces.OWL;
 
 import java.util.Map;
 

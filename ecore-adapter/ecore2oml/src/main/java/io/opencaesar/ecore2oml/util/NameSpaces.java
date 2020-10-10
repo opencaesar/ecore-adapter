@@ -1,4 +1,4 @@
-package io.opencaesar.ecore2oml;
+package io.opencaesar.ecore2oml.util;
 
 public interface NameSpaces {
 	// Namespaces for core vocabularies

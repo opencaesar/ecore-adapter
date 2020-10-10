@@ -1,8 +1,8 @@
 package io.opencaesar.ecore2oml.util;
 
-import static io.opencaesar.ecore2oml.NameSpaces.DC;
-import static io.opencaesar.ecore2oml.NameSpaces.OML;
-import static io.opencaesar.ecore2oml.NameSpaces.RDFS;
+import static io.opencaesar.ecore2oml.util.NameSpaces.DC;
+import static io.opencaesar.ecore2oml.util.NameSpaces.OML;
+import static io.opencaesar.ecore2oml.util.NameSpaces.RDFS;
 import static io.opencaesar.oml.util.OmlRead.getMembers;
 import static org.eclipse.xtext.xbase.lib.IterableExtensions.exists;
 
