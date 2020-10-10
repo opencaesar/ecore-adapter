@@ -4,8 +4,8 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreSwitch;
 
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.IRIConstants;
 import io.opencaesar.ecore2oml.util.Util;
@@ -17,7 +17,7 @@ import io.opencaesar.oml.util.OmlWriter;
 public class EDataTypeHandler implements ConversionHandler{
 
 	@Override
-	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
+	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EDataType object = (EDataType)eObject;
 		final String name = Util.getMappedName(object);
 		final FacetedScalar scalar = oml.addFacetedScalar(vocabulary, name, null, null, null, null, null, null, null, null, null);

@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.oml.AnnotatedElement;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
 import io.opencaesar.oml.SeparatorKind;
@@ -93,13 +94,31 @@ public class Util {
 		}
 	}
 	
-	public static void addLabelAnnotatiopnIfNeeded(ENamedElement object, Member element, OmlWriter oml, Vocabulary vocabulary) {
+	public static void addLabelAnnotationIfNeeded(ENamedElement object, Member element, OmlWriter oml, Vocabulary vocabulary) {
 		if (!object.getName().equals(element.getName())) {
 			Literal label = oml.createQuotedLiteral(vocabulary, object.getName(), null, null);
 			oml.addAnnotation(vocabulary, OmlRead.getIri(element), DC+"#title", label);
 		}
 	}
-		
+	
+	public static void addTitle(ENamedElement object, AnnotatedElement element, OmlWriter oml, Vocabulary vocabulary) {
+		String splitted = splitCamelCase(object.getName());
+		Literal label = oml.createQuotedLiteral(vocabulary, splitted, null, null);
+		oml.addAnnotation(element, RDFS+"#label", label);
+	}
+	
+	// TODO : may be user org.apache.commons.lang.StringUtils.splitByCharacterTypeCamelCase instead
+	private static String splitCamelCase(String s) {
+		   return s.replaceAll(
+		      String.format("%s|%s|%s",
+		         "(?<=[A-Z])(?=[A-Z][a-z])",
+		         "(?<=[^A-Z])(?=[A-Z])",
+		         "(?<=[A-Za-z])(?=[^A-Za-z])"
+		      ),
+		      " "
+		   );
+		}
+	
 	public static String getPrefix(EPackage object) {
 		return object.getNsPrefix();
 	}	
@@ -176,13 +195,13 @@ public class Util {
 		return iri;
 	}
 	
-	static public void handleNamedElementDoc(ENamedElement element, Member object, OmlWriter oml, Vocabulary vocabulary) {
+	static public void handleNamedElementDoc(ENamedElement element, AnnotatedElement object, OmlWriter oml, Vocabulary vocabulary) {
 		EAnnotation genModelAnnotation = element.getEAnnotation(GEN_MODEL);
 		if (genModelAnnotation!=null) {
 			String val = genModelAnnotation.getDetails().get(DOCUMENTATION);
 			if (val!=null && !val.isBlank()) {
 				Literal value = oml.createQuotedLiteral(vocabulary, val, null, null);
-				oml.addAnnotation(vocabulary, OmlRead.getIri(object), DC+"#description", value);
+				oml.addAnnotation(object, DC+"#description", value);
 			}
 		}
 	}

@@ -20,9 +20,9 @@ import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreSwitch;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
@@ -43,7 +43,7 @@ public class EClassHandler implements ConversionHandler {
 
 	@Override
 	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
+			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EClass object = (EClass) eObject;
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;

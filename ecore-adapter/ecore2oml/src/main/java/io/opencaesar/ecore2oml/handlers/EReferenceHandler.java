@@ -1,7 +1,7 @@
 package io.opencaesar.ecore2oml.handlers;
 
 import static io.opencaesar.ecore2oml.util.Util.addGeneratedAnnotation;
-import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotatiopnIfNeeded;
+import static io.opencaesar.ecore2oml.util.Util.addLabelAnnotationIfNeeded;
 import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
@@ -16,9 +16,9 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.util.EcoreSwitch;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
@@ -44,7 +44,7 @@ public class EReferenceHandler implements ConversionHandler{
 	}
 	
 	public  EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
+			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
 		final String entityName =  getRelationShipName(object);
@@ -112,7 +112,8 @@ public class EReferenceHandler implements ConversionHandler{
 			// the forward relation
 			final String forwardName = name;
 			ForwardRelation forward = oml.addForwardRelation(entity, forwardName);
-			addLabelAnnotatiopnIfNeeded(object,forward, oml, vocabulary);
+			addLabelAnnotationIfNeeded(object,forward, oml, vocabulary);
+			Util.addTitle(object, forward, oml, vocabulary);
 			if (collisionInfo!=null) {
 				collisionInfo.entity = entity;
 				collisionInfo.forward = forward;
@@ -124,7 +125,8 @@ public class EReferenceHandler implements ConversionHandler{
 					reverseName = getAnnotationValue(object, AnnotationKind.reverseName);
 				}
 				ReverseRelation reverse = oml.addReverseRelation(entity, reverseName);
-				addLabelAnnotatiopnIfNeeded(opposite,reverse, oml, vocabulary);
+				addLabelAnnotationIfNeeded(opposite,reverse, oml, vocabulary);
+				Util.addTitle(opposite, reverse, oml, vocabulary);
 			}
 		}
 		

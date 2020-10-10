@@ -1,10 +1,6 @@
 package io.opencaesar.ecore2oml;
 
-import static io.opencaesar.ecore2oml.NameSpaces.OWL;
-import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
-import static io.opencaesar.ecore2oml.util.Util.getPrefix;
-import static io.opencaesar.ecore2oml.util.Util.getSeparator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -32,14 +28,14 @@ import io.opencaesar.ecore2oml.handlers.ConversionHandler;
 import io.opencaesar.ecore2oml.handlers.EAttributeHandler;
 import io.opencaesar.ecore2oml.handlers.EClassHandler;
 import io.opencaesar.ecore2oml.handlers.EDataTypeHandler;
-import io.opencaesar.ecore2oml.handlers.EReferenceHandler;
 import io.opencaesar.ecore2oml.handlers.EEnumHandler;
+import io.opencaesar.ecore2oml.handlers.EPackageHandler;
+import io.opencaesar.ecore2oml.handlers.EReferenceHandler;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.ConversionPreProcessing;
 import io.opencaesar.ecore2oml.preprocessors.EAttributeConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EPackageConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.EReferencConversionParticipant;
-import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlWriter;
 
@@ -51,10 +47,6 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	
 	static {
 		preProcessorsRegistery.add(ConversionPreProcessing.class);
-	}
-	
-	static {
-		initHandlers();
 	}
 	
 
@@ -74,6 +66,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 		this.outputResourceURI = outputResourceURI;
 		this.oml = oml;
 		initPreProcessors();
+		initHandlers();
 	}
 	
 	public void run() {
@@ -96,15 +89,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	@Override
 	public EObject caseEPackage(EPackage object) {
-		final String iri = getIri(object);
-		final SeparatorKind separator = getSeparator(object);
-		final String pefix = getPrefix(object);
-		
-		vocabulary = oml.createVocabulary(outputResourceURI, iri, separator, pefix);
-		oml.addVocabularyExtension(vocabulary, OWL, null);
-		object.getEClassifiers().stream().forEach(c -> doSwitch(c));
-		
-		return vocabulary;
+		return handlers.get(EcorePackage.EPACKAGE).convert(object, null, oml, collections,this);
 	}
 
 	@Override
@@ -161,12 +146,19 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 		}
 	}
 	
-	private static void initHandlers() {
+	private  void initHandlers() {
 		// TODO : get classes from file if needed
+		handlers.put(EcorePackage.EPACKAGE, new EPackageHandler(outputResourceURI));
 		handlers.put(EcorePackage.EENUM, new EEnumHandler());
 		handlers.put(EcorePackage.EDATA_TYPE, new EDataTypeHandler());
 		handlers.put(EcorePackage.EATTRIBUTE, new EAttributeHandler());
 		handlers.put(EcorePackage.EREFERENCE, new EReferenceHandler());
 		handlers.put(EcorePackage.ECLASS, new EClassHandler());
+	}
+
+	public void setVocabulary(Vocabulary vocabulary2) {
+		assert vocabulary2==null : "Vocabulary is set already";
+		this.vocabulary = vocabulary2;
+		
 	}
 }

@@ -13,10 +13,10 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreSwitch;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.preprocessors.CollisionInfo;
 import io.opencaesar.ecore2oml.util.Constants;
@@ -76,7 +76,7 @@ public class EAttributeHandler implements ConversionHandler {
 
 	@Override
 	public EObject doConvert(EObject oObject, Vocabulary vocabulary, OmlWriter oml,
-			Map<CollectionKind, Object> collections,EcoreSwitch<EObject> visitor) {
+			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EAttribute object = (EAttribute) oObject;
 		final EClass domain = object.getEContainingClass();
 		final EDataType range = object.getEAttributeType();
