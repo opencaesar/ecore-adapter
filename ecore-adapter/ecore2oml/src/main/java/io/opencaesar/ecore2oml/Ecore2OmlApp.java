@@ -33,6 +33,7 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.io.CharStreams;
 import com.google.inject.Injector;
 
+import io.opencaesar.ecore2oml.util.URIMapper;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlWriter;
@@ -56,12 +57,21 @@ public class Ecore2OmlApp {
 		required=true, 
 		order=2
 	)
+	
 	private String outputCatalogPath;
+	
+	@Parameter(
+			names= {"--uri-map", "-u"}, 
+			description="Location of the URI Map file (optional)",  
+			order=3
+		)
+	
+	private String uriMapperPath;
 
 	@Parameter(
 		names= {"-d", "--debug"}, 
 		description="Shows debug logging statements", 
-		order=3
+		order=4
 	)
 	private boolean debug;
 
@@ -69,7 +79,7 @@ public class Ecore2OmlApp {
 		names= {"--help","-h"}, 
 		description="Displays summary of options", 
 		help=true, 
-		order=4) 
+		order=5) 
 	private boolean help;
 
 	private Logger LOGGER = LogManager.getLogger(Ecore2OmlApp.class);
@@ -105,6 +115,7 @@ public class Ecore2OmlApp {
 		LOGGER.info("=================================================================");
 		LOGGER.info("Input Folder Path= " + inputFolderPath);
 		LOGGER.info("Output Catalog Path= " + outputCatalogPath);
+		LOGGER.info("URI Map Path= " + uriMapperPath);
 
 		final File inputFolder = new File(inputFolderPath);
 		final Collection<File> inputFiles = collectEcoreFiles(inputFolder);
@@ -128,6 +139,7 @@ public class Ecore2OmlApp {
 
 		final URL catalogURL = new File(outputCatalogPath).toURI().toURL();
 		final OmlCatalog catalog = OmlCatalog.create(catalogURL);
+		URIMapper.init(uriMapperPath);
 
 		// create the Oml writer
 		final OmlWriter writer = new OmlWriter(outputResourceSet);

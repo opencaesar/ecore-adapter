@@ -156,7 +156,7 @@ public class Util {
 		if (nsURI.endsWith("#") || nsURI.endsWith("/")) {
 			nsURI = nsURI.substring(0, nsURI.length()-1);
 		}
-		return nsURI;
+		return URIMapper.getInstance().getMappedIRI(nsURI);
 	}	
 	
 	
