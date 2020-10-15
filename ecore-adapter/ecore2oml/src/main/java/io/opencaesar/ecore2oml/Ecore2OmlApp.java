@@ -24,11 +24,9 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
-import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.beust.jcommander.IParameterValidator;
@@ -195,18 +193,22 @@ public class Ecore2OmlApp {
 			dependency.remove(d);
 		});
 		
-		Map<String,EPackage> defaultPkgs = new HashMap<String, EPackage>();
-		defaultPkgs.put(Util.getIri( EcorePackage.eINSTANCE),  EcorePackage.eINSTANCE);
-		defaultPkgs.put(Util.getIri( XMLTypePackage.eINSTANCE),  XMLTypePackage.eINSTANCE);
-		
-
-		// create Ecore default packages
-		//final EPackage[] defaultEPackages = { EcorePackage.eINSTANCE, XMLTypePackage.eINSTANCE };
-		for (Entry<String, EPackage> iri: dependency.entrySet()) {
-			String ecoreRelativePath = iri.getKey() +"."+OML_EXTENSION;
-			URI ecoreResourceURI = URI.createURI(ecoreRelativePath);
-			new Ecore2Oml(iri.getValue(), ecoreResourceURI, writer).run();
-			outputResourceURIs.add (ecoreResourceURI);
+		while (!dependency.isEmpty()) {
+			// create Ecore default packages
+			//final EPackage[] defaultEPackages = { EcorePackage.eINSTANCE, XMLTypePackage.eINSTANCE };
+			for (Entry<String, EPackage> iri: dependency.entrySet()) {
+				String ecoreRelativePath = iri.getKey() +"."+OML_EXTENSION;
+				URI ecoreResourceURI = URI.createURI(ecoreRelativePath);
+				Ecore2Oml e2o = new Ecore2Oml(iri.getValue(), ecoreResourceURI, writer);
+				e2o.run();
+				dependency.putAll(e2o.getDependencies());
+				outputResourceURIs.add (ecoreResourceURI);
+				handled.add(iri.getKey());
+			}
+			
+			handled.forEach(d -> {
+				dependency.remove(d);
+			});
 		}
 		
 		// finish the Oml writer
