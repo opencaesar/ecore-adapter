@@ -1,29 +1,27 @@
 package io.opencaesar.ecore2oml.handlers;
 
-import static io.opencaesar.ecore2oml.util.Util.getAnnotationValue;
 import static io.opencaesar.ecore2oml.util.Util.getIri;
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
-import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EModelElement;
-import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
+import io.opencaesar.ecore2oml.preprocessors.RelationshipInfo;
+import io.opencaesar.ecore2oml.util.Pair;
+import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.Entity;
@@ -38,6 +36,7 @@ public class EClassHandler implements ConversionHandler {
 	private static final String ETYPE = "eType";
 	private static final String DUPLICATES = "duplicates";
 	private static final String REDEFINES = "redefines";
+	private static final String SUBSETS = "subsets";
 
 	static private Logger LOGGER = LogManager.getLogger(EClassHandler.class);
 
@@ -45,10 +44,14 @@ public class EClassHandler implements ConversionHandler {
 	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EClass object = (EClass) eObject;
+		boolean isRelationship = RelationshipUtil.getInstance().isRelationship(object, oml, vocabulary);
+		if (isRelationship) {
+			System.out.println(getIri(object, vocabulary, oml) + " Is Relationship");
+		}
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;
 		Entity entity = null;
-		if (isAnnotationSet(object, AnnotationKind.isRelationEntity)) {
+		if (isRelationship) {
 			entity = convertEClassToRelationEntity(object, oml, vocabulary);
 		} else if (isAspect(object)) {
 			entity = oml.addAspect(vocabulary, getMappedName(object));
@@ -167,23 +170,78 @@ public class EClassHandler implements ConversionHandler {
 	}
 
 	static private RelationEntity convertEClassToRelationEntity(EClass object, OmlWriter oml, Vocabulary vocabulary) {
-		final String sourceIri = getAnnotatedElementIri(object.getEAllReferences(), AnnotationKind.isRelationSource,
-				oml, vocabulary);
-		final String targetIri = getAnnotatedElementIri(object.getEAllReferences(), AnnotationKind.isRelationTarget,
-				oml, vocabulary);
-		final String forward = getAnnotationValue(object, AnnotationKind.forwardName);
-		final String reverse = getAnnotationValue(object, AnnotationKind.reverseName);
-
+		Pair<EReference, EReference> srcTarget =  getSourceAndTaregt( object, oml, vocabulary);
+		final String sourceIri = getIri(srcTarget.first.getEType(),vocabulary,oml);
+		final String targetIri = getIri(srcTarget.second.getEType(),vocabulary,oml);
 		final RelationEntity entity = oml.addRelationEntity(vocabulary, getMappedName(object), sourceIri, targetIri,
 				false, false, false, false, false, false, false);
-		oml.addForwardRelation(entity, forward);
-		if (reverse != null) {
-			oml.addReverseRelation(entity, reverse);
-		}
+		oml.addForwardRelation(entity, getMappedName(srcTarget.first));
+		//if (reverse != null) {
+			//oml.addReverseRelation(entity, reverse);
+		//}
 
 		return entity;
 	}
 
+	
+	
+	private static Pair<EReference, EReference> getSourceAndTaregt(EClass object, OmlWriter oml,
+			Vocabulary vocabulary) {
+		Pair<EReference, EReference> state = new Pair<>();
+		boolean isRelationShip = RelationshipUtil.getInstance().isRelationship(object,  oml,vocabulary);
+		if (isRelationShip) {
+			RelationshipInfo info = RelationshipUtil.getInstance().getInfo(object, oml, vocabulary);
+			EList<EReference> refs = object.getEReferences();
+			for (EReference ref : refs) {
+				if (ref.getName().equals(info.getSourceIRI())) {
+					info.setSourceIRI(ref.getName());
+					state.first = ref;
+				}else if (ref.getName().equals(info.getTargetIRI())) {
+					info.setTargetIRI(ref.getName());
+					state.second = ref;
+				}else {
+					// check using sub sets
+					checkSubsets(ref, state, info);
+				}
+				if (state.first !=null && state.second!=null) {
+					break;
+				}
+			}
+		}
+		if (state.first==null && state.second==null) {
+			// if we could not find source and target we need to walk up the hierarchy 
+			EList<EClass> supers = object.getESuperTypes();
+			for (EClass eClass : supers) {
+				state =  getSourceAndTaregt( eClass, oml, vocabulary);
+				if (state.first !=null && state.second!=null) {
+					break;
+				}
+			}
+		}
+		return state;
+	}
+
+	static private void checkSubsets(EReference object, Pair<EReference, EReference> state, RelationshipInfo info) {
+		EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
+		if (subsetAnnotaion!=null) {
+			subsetAnnotaion.getReferences().forEach(superSet -> {
+				EReference superRef = (EReference)superSet;
+				if (superRef.getName().equals(info.getSourceIRI())) {
+					info.setSourceIRI(object.getName());
+					state.first = object;
+					return;
+				}else if (superRef.getName().equals(info.getTargetIRI())) {
+					info.setTargetIRI(object.getName());
+					state.second = object;
+					return;
+				}
+			});
+
+		}
+	}
+
+
+	/*
 	static private <T extends ENamedElement> String getAnnotatedElementIri(Collection<T> coll, AnnotationKind kind,
 			OmlWriter oml, Vocabulary vocabulary) {
 		final Optional<T> object = coll.stream().filter(i -> isAnnotationSet(i, kind)).findFirst();
@@ -192,7 +250,7 @@ public class EClassHandler implements ConversionHandler {
 		}
 		return null;
 	}
-
+*/
 	static private boolean isAspect(EClass object) {
 		return (object.eIsProxy() || object.isAbstract() || object.isInterface())
 				&& object.getESuperTypes().stream().allMatch(i -> isAspect(i));
