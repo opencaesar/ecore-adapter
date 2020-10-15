@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.oml.AnnotatedElement;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
@@ -136,15 +137,15 @@ public class Util {
 		return exists(getMembers(vocabulary), i -> i.getName().equals(name));		
 	}
 	
-	public static String getIri(final ENamedElement object, Vocabulary vocabulary, OmlWriter oml) {
+	public static String getIri(final ENamedElement object, Vocabulary vocabulary, OmlWriter oml,Ecore2Oml e2o) {
 		if (object instanceof EPackage) {
 			return getIri((EPackage) object);
 		} else if (object instanceof EClass) {
-			return getIri((EClass) object,vocabulary,oml);
+			return getIri((EClass) object,vocabulary,oml,e2o);
 		} else if (object instanceof EEnum) {
-			return getIri((EEnum) object,vocabulary,oml);
+			return getIri((EEnum) object,vocabulary,oml,e2o);
 		} else if (object instanceof EDataType) {
-			return getIri((EDataType) object,vocabulary,oml);
+			return getIri((EDataType) object,vocabulary,oml,e2o);
 		} else if (object instanceof EStructuralFeature) {
 			return getIri((EStructuralFeature) object);
 		}
@@ -164,18 +165,18 @@ public class Util {
 		return getIri(ePackage)+ getSeparator(ePackage)+name;
 	}
 
-	public static String getIri(EClass object, Vocabulary vocabulary, OmlWriter oml) {
+	public static String getIri(EClass object, Vocabulary vocabulary, OmlWriter oml,Ecore2Oml e2o) {
 		final EPackage ePackage = object.getEPackage();  
 		if (ePackage != null) {
-			return qualify(getIri(ePackage)+ getSeparator(ePackage)+ getMappedName(object), object,vocabulary,oml);
+			return qualify(getIri(ePackage)+ getSeparator(ePackage)+ getMappedName(object), object,vocabulary,oml,e2o);
 		}
 		return null;
 	}	
 
-	public static String getIri(EDataType object, Vocabulary vocabulary, OmlWriter oml) {
+	public static String getIri(EDataType object, Vocabulary vocabulary, OmlWriter oml, Ecore2Oml e2o) {
 		final EPackage ePackage = object.getEPackage();  
 		if (ePackage != null) {
-			return qualify(getIri(ePackage)+ getSeparator(ePackage)+ getMappedName(object), object,vocabulary,oml);
+			return qualify(getIri(ePackage)+ getSeparator(ePackage)+ getMappedName(object), object,vocabulary,oml,e2o);
 		}
 		return null;
 	}	
@@ -185,11 +186,12 @@ public class Util {
 		return getIri(ePackage)+ getSeparator(ePackage)+ getMappedName(object);
 	}	
 
-	static private String qualify(String iri, EClassifier object, Vocabulary vocabulary, OmlWriter oml) {
+	static private String qualify(String iri, EClassifier object, Vocabulary vocabulary, OmlWriter oml,Ecore2Oml e2o) {
 		final String vocabularyIri = getIri(object.getEPackage());
 		if (!vocabularyIri.equals(vocabulary.getIri())) {
 			if (!vocabulary.getOwnedImports().stream().anyMatch(i -> i.getUri().equals(vocabularyIri))) {
 				oml.addVocabularyExtension(vocabulary, vocabularyIri, null);
+				e2o.addExternalDepenedncy(vocabularyIri,object.getEPackage());
 			}
 		}
 		return iri;

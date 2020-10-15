@@ -8,7 +8,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -35,6 +40,7 @@ import com.google.inject.Injector;
 
 import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.URIMapper;
+import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlWriter;
@@ -158,6 +164,8 @@ public class Ecore2OmlApp {
 		// start the Oml Writer
 		writer.start();
 
+		Map<String,EPackage> dependency = new HashMap<>();
+		Set<String> handled = new HashSet<>();
 		// create the new resources
 		final List<URI> outputResourceURIs = new ArrayList<URI>();
 		for (File inputFile : inputFiles) {
@@ -172,19 +180,32 @@ public class Ecore2OmlApp {
 						final String relativePath = catalog.resolveURI(ePackage.getNsURI())+"."+OML_EXTENSION;
 						final URI outputResourceURI = URI.createURI(relativePath);
 						LOGGER.info("Creating: "+outputResourceURI);
-						new Ecore2Oml(ePackage, outputResourceURI, writer).run();
+						Ecore2Oml e2o = new Ecore2Oml(ePackage, outputResourceURI, writer);
+						e2o.run();
+						dependency.putAll(e2o.getDependencies());
 						outputResourceURIs.add (outputResourceURI);
+						String iri = Util.getIri(ePackage);
+						handled.add(iri);
 					}
 				}
 			}
 		}
+		
+		handled.forEach(d -> {
+			dependency.remove(d);
+		});
+		
+		Map<String,EPackage> defaultPkgs = new HashMap<String, EPackage>();
+		defaultPkgs.put(Util.getIri( EcorePackage.eINSTANCE),  EcorePackage.eINSTANCE);
+		defaultPkgs.put(Util.getIri( XMLTypePackage.eINSTANCE),  XMLTypePackage.eINSTANCE);
+		
 
 		// create Ecore default packages
-		final EPackage[] defaultEPackages = { EcorePackage.eINSTANCE, XMLTypePackage.eINSTANCE };
-		for (EPackage ePackage : defaultEPackages) {
-			String ecoreRelativePath = catalog.resolveURI(ePackage.getNsURI())+"."+OML_EXTENSION;
+		//final EPackage[] defaultEPackages = { EcorePackage.eINSTANCE, XMLTypePackage.eINSTANCE };
+		for (Entry<String, EPackage> iri: dependency.entrySet()) {
+			String ecoreRelativePath = iri.getKey() +"."+OML_EXTENSION;
 			URI ecoreResourceURI = URI.createURI(ecoreRelativePath);
-			new Ecore2Oml(ePackage, ecoreResourceURI, writer).run();
+			new Ecore2Oml(iri.getValue(), ecoreResourceURI, writer).run();
 			outputResourceURIs.add (ecoreResourceURI);
 		}
 		

@@ -54,8 +54,8 @@ public class EReferenceHandler implements ConversionHandler{
 		}
 		
 		
-		String sourceIri = getIri(object.getEContainingClass(), vocabulary, oml);
-		String targetIri = getIri(object.getEReferenceType(), vocabulary, oml);
+		String sourceIri = getIri(object.getEContainingClass(), vocabulary, oml,visitor);
+		String targetIri = getIri(object.getEReferenceType(), vocabulary, oml,visitor);
 		final EReference opposite = object.getEOpposite();
 		final boolean isFunctional = object.getUpperBound() == 1;
 		final boolean isInverseFunctional = (opposite != null) && opposite.getLowerBound() == 1;
@@ -71,8 +71,8 @@ public class EReferenceHandler implements ConversionHandler{
 			return null;
 		}
 		
-		String refIRI = getIri(object, vocabulary, oml);
-		String rangeIRI = getIri(object.getEType(), vocabulary, oml);
+		String refIRI = getIri(object, vocabulary, oml,visitor);
+		String rangeIRI = getIri(object.getEType(), vocabulary, oml,visitor);
 		
 		if (collisionInfo!=null) {
 			// create the base source, and target
@@ -86,8 +86,8 @@ public class EReferenceHandler implements ConversionHandler{
 			}
 			sourceIri =  OmlRead.getIri(collisionInfo.fromAspect);
 			targetIri =  OmlRead.getIri(collisionInfo.toAspect);
-			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml), sourceIri);
-			oml.addSpecializationAxiom(vocabulary, getIri(object.getEReferenceType(), vocabulary, oml), targetIri);
+			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml,visitor), sourceIri);
+			oml.addSpecializationAxiom(vocabulary, getIri(object.getEReferenceType(), vocabulary, oml,visitor), targetIri);
 		}
 		
 		
@@ -100,7 +100,7 @@ public class EReferenceHandler implements ConversionHandler{
 				addGeneratedAnnotation(aspect, oml, vocabulary);
 			}
 			final String aspectIri = OmlRead.getNamespace(vocabulary) + aspectName;
-			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml), aspectIri);
+			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml,visitor), aspectIri);
 			sourceIri = aspectIri;
 		}
 		RelationEntity entity=null;
@@ -133,9 +133,9 @@ public class EReferenceHandler implements ConversionHandler{
 		// forward restriction happen last
 		if (collisionInfo!=null) {
 			oml.addRelationRangeRestrictionAxiom(vocabulary,
-						getIri(object.getEContainingClass(), vocabulary, oml),
+						getIri(object.getEContainingClass(), vocabulary, oml,visitor),
 					   OmlRead.getIri(collisionInfo.forward),
-					   getIri(object.getEReferenceType(), vocabulary, oml),
+					   getIri(object.getEReferenceType(), vocabulary, oml,visitor),
 					   RangeRestrictionKind.ALL);
 		}
 		handleCardinality(vocabulary, oml, object, sourceIri, refIRI, rangeIRI);

@@ -34,7 +34,7 @@ import io.opencaesar.oml.util.OmlWriter;
 public class EAttributeHandler implements ConversionHandler {
 
 	static public ScalarProperty handleEAttributeToScalarProperty(EAttribute object, String domainIri, String rangeIri,
-			OmlWriter oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections) {
+			OmlWriter oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections,Ecore2Oml e2o) {
 		final String name = getMappedName(object);
 		// check for collision
 		@SuppressWarnings("unchecked")
@@ -42,9 +42,9 @@ public class EAttributeHandler implements ConversionHandler {
 				.get(CollectionKind.CollidingAttributes);
 		CollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 		final boolean isFunctional = object.getUpperBound() == 1;
-		String containerIRI = getIri(object.getEContainingClass(), vocabulary, oml);
-		String attribuiteIRI =  getIri(object, vocabulary, oml);
-		String rangeIRI = getIri(object.getEType(), vocabulary, oml);
+		String containerIRI = getIri(object.getEContainingClass(), vocabulary, oml,e2o);
+		String attribuiteIRI =  getIri(object, vocabulary, oml,e2o);
+		String rangeIRI = getIri(object.getEType(), vocabulary, oml,e2o);
 		if (collisionInfo != null) {
 			// fix the rangeIRI
 			String realName = Constants.BASE_PREFIX + StringExtensions.toFirstUpper(name);
@@ -86,7 +86,7 @@ public class EAttributeHandler implements ConversionHandler {
 		}
 		
 		// find the domain
-		String domainIri = getIri(domain, vocabulary, oml);
+		String domainIri = getIri(domain, vocabulary, oml,visitor);
 		if (isAnnotationSet(object, AnnotationKind.domainName)) {
 			final String aspectName = getAnnotationValue(object, AnnotationKind.domainName);
 			if (!memberExists(aspectName, vocabulary)) {
@@ -94,19 +94,19 @@ public class EAttributeHandler implements ConversionHandler {
 				addGeneratedAnnotation(aspect, oml, vocabulary);
 			}
 			final String aspectIri = OmlRead.getNamespace(vocabulary) + aspectName;
-			oml.addSpecializationAxiom(vocabulary, getIri(domain, vocabulary, oml), aspectIri);
+			oml.addSpecializationAxiom(vocabulary, getIri(domain, vocabulary, oml,visitor), aspectIri);
 			domainIri = aspectIri;
 		}
 
 		// find the range
-		String rangeIri = getIri(range, vocabulary, oml);
+		String rangeIri = getIri(range, vocabulary, oml,visitor);
 
 		// create Property
 		Property property = null;
 		if (isAnnotationSet(object, AnnotationKind.isAnnotationProperty)) {
 			property = caseEAttributeToAnnotationProperty(object, oml, vocabulary);
 		} else {
-			property = handleEAttributeToScalarProperty(object, domainIri, rangeIri, oml, vocabulary, collections);
+			property = handleEAttributeToScalarProperty(object, domainIri, rangeIri, oml, vocabulary, collections,visitor);
 		}
 		return property;
 	}

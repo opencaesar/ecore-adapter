@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 
+import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.RelationshipInfo;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlWriter;
@@ -46,12 +47,12 @@ public class RelationshipUtil {
 		}
 	}
 	
-	public boolean isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc) {
+	public boolean isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc, Ecore2Oml e2o) {
 		String[] matched = new String[1];
 		RelationshipInfo[] matchedInfo = new RelationshipInfo[1];
-		boolean bRetVal = _isRelationship(toCheck, oml, voc, matched,matchedInfo);
+		boolean bRetVal = _isRelationship(toCheck, oml, voc, matched,matchedInfo,e2o);
 		if (bRetVal) {
-			String iri = Util.getIri(toCheck,voc,oml);
+			String iri = Util.getIri(toCheck,voc,oml,e2o);
 			if (!relationShips.containsKey(iri)) {
 				relationShips.put(iri, new RelationshipInfo(matchedInfo[0].getSourceIRI(), matchedInfo[0].getTargetIRI()));
 			}
@@ -59,9 +60,9 @@ public class RelationshipUtil {
 		return bRetVal;
 	}
 	
-	public boolean _isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc,String[] matchedIRI, RelationshipInfo[] matchedInfo) {
+	public boolean _isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc,String[] matchedIRI, RelationshipInfo[] matchedInfo,Ecore2Oml e2o) {
 		boolean bRetVal = false;
-		String iri = Util.getIri(toCheck,voc,oml);
+		String iri = Util.getIri(toCheck,voc,oml,e2o);
 		if (relationShips.containsKey(iri)) {
 			matchedIRI[0] =  iri;
 			matchedInfo[0] = relationShips.get(iri);
@@ -69,7 +70,7 @@ public class RelationshipUtil {
 		}
 		EList<EClass> superTypes = toCheck.getEAllSuperTypes();
 		for (EClass superType : superTypes) {
-			bRetVal |= _isRelationship(superType, oml, voc,matchedIRI,matchedInfo);
+			bRetVal |= _isRelationship(superType, oml, voc,matchedIRI,matchedInfo,e2o);
 			if (bRetVal) {
 				return true;
 			}
@@ -91,8 +92,8 @@ public class RelationshipUtil {
 		return builder.toString();
 	}
 
-	public RelationshipInfo getInfo(EClass eContainingClass, OmlWriter oml, Vocabulary vocabulary) {
-		return relationShips.get( Util.getIri(eContainingClass,vocabulary,oml));
+	public RelationshipInfo getInfo(EClass eContainingClass, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
+		return relationShips.get( Util.getIri(eContainingClass,vocabulary,oml, e2o));
 	}
 	
 

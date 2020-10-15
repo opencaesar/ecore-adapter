@@ -45,6 +45,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	private static final Set<Class<? extends ConversionPreProcessing >> preProcessorsRegistery = ConcurrentHashMap.newKeySet();
 	private static final Map<Integer, ConversionHandler> handlers = new HashMap<>();
 	
+	
 	static {
 		preProcessorsRegistery.add(ConversionPreProcessing.class);
 	}
@@ -56,6 +57,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	private final URI outputResourceURI;
 	private final OmlWriter oml;
 	private Set<ConversionPreProcessing> preprocessors = new HashSet<>();
+	private Map<String,EPackage> dependency = new HashMap<>();
 	
 	private Logger LOGGER = LogManager.getLogger(Ecore2Oml.class);
 	
@@ -78,6 +80,14 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 		}
 		doSwitch(ePackage);
 		handlersPostProcess();
+	}
+	
+	public void addExternalDepenedncy(String iri, EPackage ePackage) {
+		dependency.put(iri,ePackage);
+	}
+	
+	public Map<String,EPackage> getDependencies() {
+		return dependency;
 	}
 
 	private void handlersPostProcess() {
