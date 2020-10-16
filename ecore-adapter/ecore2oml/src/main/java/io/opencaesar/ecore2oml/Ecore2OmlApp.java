@@ -197,7 +197,7 @@ public class Ecore2OmlApp {
 			// create Ecore default packages
 			//final EPackage[] defaultEPackages = { EcorePackage.eINSTANCE, XMLTypePackage.eINSTANCE };
 			for (Entry<String, EPackage> iri: dependency.entrySet()) {
-				String ecoreRelativePath = iri.getKey() +"."+OML_EXTENSION;
+				String ecoreRelativePath =  catalog.resolveURI(iri.getKey()) +"."+OML_EXTENSION;
 				URI ecoreResourceURI = URI.createURI(ecoreRelativePath);
 				Ecore2Oml e2o = new Ecore2Oml(iri.getValue(), ecoreResourceURI, writer);
 				e2o.run();
