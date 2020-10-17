@@ -48,7 +48,7 @@ public class EReferenceHandler implements ConversionHandler{
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
 		final String entityName =  getRelationShipName(object);
-		if (FilterUtil.shouldFilter(object)) {
+		if (FilterUtil.shouldFilter(object) || visitor.isConverted(object)) {
 			addFiltered(object,collections);
 			return null;
 		}

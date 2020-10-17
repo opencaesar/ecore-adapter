@@ -1,10 +1,8 @@
 package io.opencaesar.ecore2oml.util;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -12,16 +10,20 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 
 import io.opencaesar.ecore2oml.Ecore2Oml;
-import io.opencaesar.ecore2oml.preprocessors.RelationshipInfo;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlWriter;
 
 public class RelationshipUtil {
 	
 	static private Logger LOGGER = LogManager.getLogger(RelationshipUtil.class);
-	private Map<String,RelationshipInfo> relationShips = new HashMap<>();
+	private Map<String,Relationship> relationShips = new HashMap<>();
+	private Map<String,ForwardOverride> overrides = new HashMap<>();
 	static private RelationshipUtil _instance = new RelationshipUtil();
 	
 	static public RelationshipUtil getInstance() {
@@ -31,14 +33,13 @@ public class RelationshipUtil {
 	static public void init(String filePath) {
 		synchronized (RelationshipUtil.class) {
 			try {
-				List<String> allLines = Files.readAllLines(Paths.get(filePath));
-				for (String line : allLines) {
-					String[] strings = line.split(" ");
-					if (strings.length >= 2) {
-						LOGGER.debug("Classifier:" + strings[0]);
-						LOGGER.debug("Source:" + strings[1]);
-						if (strings.length==3) LOGGER.debug("Target:" + strings[2]);
-						_instance.addRelationship(strings[0], strings[1], strings.length==3 ? strings[2] : "");
+				Gson gson = new Gson();
+				JsonReader reader = new JsonReader(new FileReader(filePath));
+				Options options = gson.fromJson(reader, Options.class);
+				for (Relationship relation : options.relationships) {
+					_instance.addRelationship(relation.root, relation);
+					for (ForwardOverride override : relation.overrides) {
+						_instance.overrides.put(override.iri,override);
 					}
 				}
 			} catch (IOException e) {
@@ -49,18 +50,19 @@ public class RelationshipUtil {
 	
 	public boolean isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc, Ecore2Oml e2o) {
 		String[] matched = new String[1];
-		RelationshipInfo[] matchedInfo = new RelationshipInfo[1];
+		Relationship[] matchedInfo = new Relationship[1];
 		boolean bRetVal = _isRelationship(toCheck, oml, voc, matched,matchedInfo,e2o);
 		if (bRetVal) {
 			String iri = Util.getIri(toCheck,voc,oml,e2o);
 			if (!relationShips.containsKey(iri)) {
-				relationShips.put(iri, new RelationshipInfo(matchedInfo[0].getSourceIRI(), matchedInfo[0].getTargetIRI()));
+				addRelationship(matchedInfo[0] , iri, new Relationship(iri,matchedInfo[0].source, matchedInfo[0].target));
 			}
 		}
 		return bRetVal;
 	}
 	
-	public boolean _isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc,String[] matchedIRI, RelationshipInfo[] matchedInfo,Ecore2Oml e2o) {
+	
+	public boolean _isRelationship(EClass toCheck,OmlWriter oml, Vocabulary voc,String[] matchedIRI, Relationship[] matchedInfo,Ecore2Oml e2o) {
 		boolean bRetVal = false;
 		String iri = Util.getIri(toCheck,voc,oml,e2o);
 		if (relationShips.containsKey(iri)) {
@@ -78,22 +80,48 @@ public class RelationshipUtil {
 		return false;
 	}
 
-	public void addRelationship(String classifierIRI, String sourceIRI, String targetIRI) {
+	public void addRelationship(String classifierIRI, Relationship rel) {
 		assert relationShips.containsKey(classifierIRI)==false : "Already added:" + classifierIRI;
-		relationShips.put(classifierIRI, new RelationshipInfo(sourceIRI, targetIRI));
+		ForwardOverride override = overrides.get(classifierIRI);
+		if (override!=null) {
+			rel.forwardPostFix = override.forwardName;
+		}
+		relationShips.put(classifierIRI, rel);
 	}
+	
+	private void addRelationship(Relationship relationship, String iri, Relationship relationship2) {
+		assert relationShips.containsKey(iri)==false : "Already added:" + iri;
+		ForwardOverride override = overrides.get(iri);
+		if (override!=null) {
+			relationship2.forwardName = override.forwardName;
+		}else {
+			relationship2.forwardPostFix = relationship.forwardPostFix;
+			relationship2.forwardName = relationship.forwardName;
+		}
+		relationShips.put(iri, relationship2);
+		
+	}
+
 	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (Entry<String, RelationshipInfo> entry : relationShips.entrySet()) {
+		for (Entry<String, Relationship> entry : relationShips.entrySet()) {
 			builder.append("Relationship: " + entry.getKey() + " => " + entry.getValue() + "\n");
 		}
 		return builder.toString();
 	}
 
-	public RelationshipInfo getInfo(EClass eContainingClass, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
+	public Relationship getInfo(EClass eContainingClass, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
 		return relationShips.get( Util.getIri(eContainingClass,vocabulary,oml, e2o));
+	}
+
+	public String getForwardName(EClassifier eClass, String iri) {
+		Relationship info = relationShips.get(iri);
+		if (info.forwardName!=null) {
+			return info.forwardName;
+		}
+		return Util.getMappedName(eClass) + info.forwardPostFix;
 	}
 	
 

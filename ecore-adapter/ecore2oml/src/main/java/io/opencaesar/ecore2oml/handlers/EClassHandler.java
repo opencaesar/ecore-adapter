@@ -19,8 +19,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
-import io.opencaesar.ecore2oml.preprocessors.RelationshipInfo;
 import io.opencaesar.ecore2oml.util.Pair;
+import io.opencaesar.ecore2oml.util.Relationship;
 import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
@@ -44,15 +44,24 @@ public class EClassHandler implements ConversionHandler {
 	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EClass object = (EClass) eObject;
+		Pair<EReference, EReference> srcAndTarget=null;
 		boolean isRelationship = RelationshipUtil.getInstance().isRelationship(object, oml, vocabulary,visitor);
 		if (isRelationship) {
-			System.out.println(getIri(object, vocabulary, oml,visitor) + " Is Relationship");
+			srcAndTarget =  getSourceAndTaregt( object, oml, vocabulary,visitor);
+			System.out.println(getIri(object, vocabulary, oml,visitor) + " Might be Relationship: " + srcAndTarget.source.getName() + " => " + srcAndTarget.target.getName());
+			if (srcAndTarget.source.getUpperBound()!=1 ||
+				srcAndTarget.target.getUpperBound()!=1) {
+				isRelationship = false;
+				System.out.println(getIri(object, vocabulary, oml,visitor) + " Not  Relationship");
+			}
 		}
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;
 		Entity entity = null;
 		if (isRelationship) {
-			entity = convertEClassToRelationEntity(object, oml, vocabulary,visitor);
+			entity = convertEClassToRelationEntity(object,srcAndTarget, oml, vocabulary,visitor);
+			visitor.addConverted(srcAndTarget.source);
+			visitor.addConverted(srcAndTarget.target);
 		} else if (isAspect(object)) {
 			entity = oml.addAspect(vocabulary, getMappedName(object));
 		} else {
@@ -169,13 +178,15 @@ public class EClassHandler implements ConversionHandler {
 		handleRetrictions(annotation, entity, element, type, true, oml, vocabulary, e2o);
 	}
 
-	static private RelationEntity convertEClassToRelationEntity(EClass object, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
-		Pair<EReference, EReference> srcTarget =  getSourceAndTaregt( object, oml, vocabulary,e2o);
-		final String sourceIri = getIri(srcTarget.first.getEType(),vocabulary,oml,e2o);
-		final String targetIri = getIri(srcTarget.second.getEType(),vocabulary,oml, e2o);
+	static private RelationEntity convertEClassToRelationEntity(EClass object, Pair<EReference, EReference> srcAndTarget, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
+		String classIRI = Util.getIri(object,vocabulary,oml,e2o); 
+		String forwardName = RelationshipUtil.getInstance().getForwardName(object,classIRI);
+		System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
+		final String sourceIri = getIri(srcAndTarget.source.getEType(),vocabulary,oml,e2o);
+		final String targetIri = getIri(srcAndTarget.target.getEType(),vocabulary,oml, e2o);
 		final RelationEntity entity = oml.addRelationEntity(vocabulary, getMappedName(object), sourceIri, targetIri,
 				false, false, false, false, false, false, false);
-		oml.addForwardRelation(entity, getMappedName(srcTarget.first));
+		oml.addForwardRelation(entity, forwardName);
 		//if (reverse != null) {
 			//oml.addReverseRelation(entity, reverse);
 		//}
@@ -190,30 +201,30 @@ public class EClassHandler implements ConversionHandler {
 		Pair<EReference, EReference> state = new Pair<>();
 		boolean isRelationShip = RelationshipUtil.getInstance().isRelationship(object,  oml,vocabulary,e2o);
 		if (isRelationShip) {
-			RelationshipInfo info = RelationshipUtil.getInstance().getInfo(object, oml, vocabulary,e2o);
+			Relationship info = RelationshipUtil.getInstance().getInfo(object, oml, vocabulary,e2o);
 			EList<EReference> refs = object.getEReferences();
 			for (EReference ref : refs) {
-				if (ref.getName().equals(info.getSourceIRI())) {
-					info.setSourceIRI(ref.getName());
-					state.first = ref;
-				}else if (ref.getName().equals(info.getTargetIRI())) {
-					info.setTargetIRI(ref.getName());
-					state.second = ref;
+				if (ref.getName().equals(info.source)) {
+					info.source = (ref.getName());
+					state.source = ref;
+				}else if (ref.getName().equals(info.target)) {
+					info.target = (ref.getName());
+					state.target = ref;
 				}else {
 					// check using sub sets
 					checkSubsets(ref, state, info);
 				}
-				if (state.first !=null && state.second!=null) {
+				if (state.source !=null && state.target!=null) {
 					break;
 				}
 			}
 		}
-		if (state.first==null && state.second==null) {
+		if (state.source==null && state.target==null) {
 			// if we could not find source and target we need to walk up the hierarchy 
 			EList<EClass> supers = object.getESuperTypes();
 			for (EClass eClass : supers) {
 				state =  getSourceAndTaregt( eClass, oml, vocabulary,e2o);
-				if (state.first !=null && state.second!=null) {
+				if (state.source !=null && state.target!=null) {
 					break;
 				}
 			}
@@ -221,18 +232,18 @@ public class EClassHandler implements ConversionHandler {
 		return state;
 	}
 
-	static private void checkSubsets(EReference object, Pair<EReference, EReference> state, RelationshipInfo info) {
+	static private void checkSubsets(EReference object, Pair<EReference, EReference> state, Relationship info) {
 		EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
 		if (subsetAnnotaion!=null) {
 			subsetAnnotaion.getReferences().forEach(superSet -> {
 				EReference superRef = (EReference)superSet;
-				if (superRef.getName().equals(info.getSourceIRI())) {
-					info.setSourceIRI(object.getName());
-					state.first = object;
+				if (superRef.getName().equals(info.source)) {
+					info.source = (object.getName());
+					state.source = object;
 					return;
-				}else if (superRef.getName().equals(info.getTargetIRI())) {
-					info.setTargetIRI(object.getName());
-					state.second = object;
+				}else if (superRef.getName().equals(info.target)) {
+					info.target = (object.getName());
+					state.target = object;
 					return;
 				}
 			});

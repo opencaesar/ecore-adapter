@@ -62,6 +62,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	private Logger LOGGER = LogManager.getLogger(Ecore2Oml.class);
 	
 	private Map<CollectionKind,Object> collections = new HashMap<>();
+	private Set<EObject> converted = new HashSet<>();
 	
 	public Ecore2Oml(EPackage ePackage, URI outputResourceURI, OmlWriter oml) {
 		this.ePackage = ePackage;
@@ -89,6 +90,15 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	public Map<String,EPackage> getDependencies() {
 		return dependency;
 	}
+	
+	public void addConverted(EObject obj) {
+		converted.add(obj);
+	}
+	
+	public boolean isConverted(EObject obj) {
+		return converted.contains(obj);
+	}
+	
 
 	private void handlersPostProcess() {
 		Set<Entry<Integer, ConversionHandler>> entries = handlers.entrySet();
