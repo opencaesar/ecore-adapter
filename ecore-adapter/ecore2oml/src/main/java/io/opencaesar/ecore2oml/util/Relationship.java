@@ -10,8 +10,10 @@ public class Relationship {
 	public  String source;
 	public String target;
 	public String forwardPostFix;
+	public String reversePostFix;
 	public String forwardName;
-	public List<ForwardOverride> overrides;
+	public String reverseName;
+	public List<OverrideInfo> overrides;
 	
 	public boolean isSource(EStructuralFeature toCheck) {
 		return Util.getIri(toCheck).equals(source);

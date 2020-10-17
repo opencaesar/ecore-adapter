@@ -181,15 +181,18 @@ public class EClassHandler implements ConversionHandler {
 	static private RelationEntity convertEClassToRelationEntity(EClass object, Pair<EReference, EReference> srcAndTarget, OmlWriter oml, Vocabulary vocabulary,Ecore2Oml e2o) {
 		String classIRI = Util.getIri(object,vocabulary,oml,e2o); 
 		String forwardName = RelationshipUtil.getInstance().getForwardName(object,classIRI);
-		System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
 		final String sourceIri = getIri(srcAndTarget.source.getEType(),vocabulary,oml,e2o);
 		final String targetIri = getIri(srcAndTarget.target.getEType(),vocabulary,oml, e2o);
 		final RelationEntity entity = oml.addRelationEntity(vocabulary, getMappedName(object), sourceIri, targetIri,
 				false, false, false, false, false, false, false);
 		oml.addForwardRelation(entity, forwardName);
-		//if (reverse != null) {
-			//oml.addReverseRelation(entity, reverse);
-		//}
+		if (srcAndTarget.source.getEOpposite()!=null) {
+			String reverseName = RelationshipUtil.getInstance().getReverseName(object,classIRI);
+			oml.addReverseRelation(entity, reverseName);
+			System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName + " - " + reverseName);
+		}else {
+			System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
+		}
 
 		return entity;
 	}
