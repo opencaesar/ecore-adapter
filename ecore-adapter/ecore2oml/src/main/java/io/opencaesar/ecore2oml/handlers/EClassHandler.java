@@ -48,11 +48,11 @@ public class EClassHandler implements ConversionHandler {
 		boolean isRelationship = RelationshipUtil.getInstance().isRelationship(object, oml, vocabulary,visitor);
 		if (isRelationship) {
 			srcAndTarget =  getSourceAndTaregt( object, oml, vocabulary,visitor);
-			System.out.println(getIri(object, vocabulary, oml,visitor) + " Might be Relationship: " + srcAndTarget.source.getName() + " => " + srcAndTarget.target.getName());
+			LOGGER.debug(getIri(object, vocabulary, oml,visitor) + " Might be Relationship: " + srcAndTarget.source.getName() + " => " + srcAndTarget.target.getName());
 			if (srcAndTarget.source.getUpperBound()!=1 ||
 				srcAndTarget.target.getUpperBound()!=1) {
 				isRelationship = false;
-				System.out.println(getIri(object, vocabulary, oml,visitor) + " Not  Relationship");
+				LOGGER.debug(getIri(object, vocabulary, oml,visitor) + " Not  Relationship");
 			}
 		}
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
@@ -189,9 +189,9 @@ public class EClassHandler implements ConversionHandler {
 		if (srcAndTarget.source.getEOpposite()!=null) {
 			String reverseName = RelationshipUtil.getInstance().getReverseName(object,classIRI);
 			oml.addReverseRelation(entity, reverseName);
-			System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName + " - " + reverseName);
+			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName + " - " + reverseName);
 		}else {
-			System.out.println(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
+			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
 		}
 
 		return entity;

@@ -11,7 +11,9 @@ public class Ecore2OmlTask extends DefaultTask {
 	
 	public String inputFolderPath = null;
 
-	public String outputCatalogPath;
+	public String outputCatalogPath = null;
+	
+	public String optionsFilePath = null;
 
 	public boolean debug;
 
@@ -24,6 +26,10 @@ public class Ecore2OmlTask extends DefaultTask {
         }
         if (outputCatalogPath != null) {
 		    args.add("-o");
+		    args.add(outputCatalogPath);
+        }
+        if (optionsFilePath != null) {
+		    args.add("-op");
 		    args.add(outputCatalogPath);
         }
 	    if (debug) {

@@ -1,6 +1,7 @@
 package io.opencaesar.ecore2oml;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,8 +35,11 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.io.CharStreams;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import com.google.inject.Injector;
 
+import io.opencaesar.ecore2oml.util.Options;
 import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.URIMapper;
 import io.opencaesar.ecore2oml.util.Util;
@@ -66,25 +70,18 @@ public class Ecore2OmlApp {
 	private String outputCatalogPath;
 	
 	@Parameter(
-			names= {"--uri-map", "-u"}, 
-			description="Location of the URI Map file (optional)",  
+			names= {"--options", "-op"}, 
+			description="Location of the options file (optional)",  
 			order=3
 		)
 	
-	private String uriMapperPath;
+	private String optionsPath;
 	
-	@Parameter(
-			names= {"--relationship-info", "-r"}, 
-			description="Location of the Relationship info file (optional)",  
-			order=4
-		)
-	
-	private String relationshipInfoPath;
 
 	@Parameter(
 		names= {"-d", "--debug"}, 
 		description="Shows debug logging statements", 
-		order=5
+		order=4
 	)
 	private boolean debug;
 
@@ -92,7 +89,7 @@ public class Ecore2OmlApp {
 		names= {"--help","-h"}, 
 		description="Displays summary of options", 
 		help=true, 
-		order=6) 
+		order=5) 
 	private boolean help;
 
 	private Logger LOGGER = LogManager.getLogger(Ecore2OmlApp.class);
@@ -128,9 +125,8 @@ public class Ecore2OmlApp {
 		LOGGER.info("=================================================================");
 		LOGGER.info("Input Folder Path= " + inputFolderPath);
 		LOGGER.info("Output Catalog Path= " + outputCatalogPath);
-		LOGGER.info("URI Map Path= " + uriMapperPath);
-		LOGGER.info("Relationship Info Path= " + relationshipInfoPath);
-
+		LOGGER.info("Options Path= " + optionsPath);
+		
 		final File inputFolder = new File(inputFolderPath);
 		final Collection<File> inputFiles = collectEcoreFiles(inputFolder);
 		
@@ -153,8 +149,16 @@ public class Ecore2OmlApp {
 
 		final URL catalogURL = new File(outputCatalogPath).toURI().toURL();
 		final OmlCatalog catalog = OmlCatalog.create(catalogURL);
-		if (uriMapperPath!=null) URIMapper.init(uriMapperPath);
-		if (relationshipInfoPath!=null) RelationshipUtil.init(relationshipInfoPath);
+		
+		if (optionsPath!=null) {
+			Gson gson = new Gson();
+			JsonReader reader = new JsonReader(new FileReader(optionsPath));
+			Options options = gson.fromJson(reader, Options.class);
+			URIMapper.init(options.uriMapping);
+			RelationshipUtil.init(options.relationships);
+			
+		}
+		
 
 		// create the Oml writer
 		final OmlWriter writer = new OmlWriter(outputResourceSet);

@@ -12,13 +12,13 @@ public class EPackageConversionParticipant extends ConversionParticipant {
 
 	@Override
 	public void handle(EObject element, Map<CollectionKind, Object> collections) {
-		LOGGER.info("Hanlding : " + element);
+		LOGGER.debug("Hanlding : " + element);
 		
 	}
 
 	@Override
 	public void postProcess(Map<CollectionKind, Object> collections) {
-		LOGGER.info("Post Processing");
+		LOGGER.debug("Post Processing");
 		
 	}
 

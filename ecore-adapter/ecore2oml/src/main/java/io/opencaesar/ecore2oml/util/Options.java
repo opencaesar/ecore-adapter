@@ -5,5 +5,6 @@ import java.util.List;
 public class Options {
 	
 	public List<Relationship> relationships;
+	public List<URIMapping> uriMapping;
 
 }

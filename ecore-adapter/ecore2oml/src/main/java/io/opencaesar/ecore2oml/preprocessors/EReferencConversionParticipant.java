@@ -63,7 +63,7 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 	}
 
 	private void _postProcessEOpposite(Map<CollectionKind, Object> collections) {
-		LOGGER.info("Post Processing : EOpposite");
+		LOGGER.debug("Post Processing : EOpposite");
 		CollidingEOppositeData collInfo = (CollidingEOppositeData) collections
 				.get(CollectionKind.CollidingEOppositeRefernces);
 		if (collInfo == null) {

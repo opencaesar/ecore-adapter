@@ -45,7 +45,7 @@ public class EAttributeConversionParticipant extends ConversionParticipant {
 
 	@Override
 	public void postProcess(Map<CollectionKind, Object> collections) {
-		LOGGER.info("Post Processing");
+		LOGGER.debug("Post Processing");
 		@SuppressWarnings("unchecked")
 		Map<String, CollisionInfo> names = (Map<String, CollisionInfo>) collections
 				.get(CollectionKind.CollidingAttributes);
