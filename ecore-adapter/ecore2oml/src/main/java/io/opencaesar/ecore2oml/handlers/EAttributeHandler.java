@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
@@ -33,7 +32,7 @@ import io.opencaesar.oml.util.OmlWriter;
 
 public class EAttributeHandler implements ConversionHandler {
 
-	static public ScalarProperty handleEAttributeToScalarProperty(EAttribute object, String domainIri, String rangeIri,
+	static public ScalarProperty handleEAttributeToScalarProperty(EAttribute object, String domainIri,
 			OmlWriter oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections,Ecore2Oml e2o) {
 		final String name = getMappedName(object);
 		// check for collision
@@ -44,21 +43,21 @@ public class EAttributeHandler implements ConversionHandler {
 		final boolean isFunctional = object.getUpperBound() == 1;
 		String containerIRI = getIri(object.getEContainingClass(), vocabulary, oml,e2o);
 		String attribuiteIRI =  getIri(object, vocabulary, oml,e2o);
-		String rangeIRI = getIri(object.getEType(), vocabulary, oml,e2o);
+		final String rangeIRI = getIri(object.getEAttributeType(), vocabulary, oml,e2o);
 		if (collisionInfo != null) {
 			// fix the rangeIRI
 			String realName = Constants.BASE_PREFIX + StringExtensions.toFirstUpper(name);
 			if (!memberExists(realName, vocabulary)) {
 				collisionInfo.baseConcept = oml.addAspect(vocabulary, realName);
 				collisionInfo.baseProperty = oml.addScalarProperty(vocabulary, name,
-						OmlRead.getIri(collisionInfo.baseConcept), rangeIri, isFunctional);
+						OmlRead.getIri(collisionInfo.baseConcept), rangeIRI, isFunctional);
 			}
 			oml.addSpecializationAxiom(vocabulary, containerIRI,
 					OmlRead.getIri(collisionInfo.baseConcept));
 			if (!collisionInfo.sameType() && !collisionInfo.getName().equals("value")) {
 				oml.addScalarPropertyRangeRestrictionAxiom(vocabulary,
 						containerIRI,
-						OmlRead.getIri(collisionInfo.baseProperty), rangeIri, RangeRestrictionKind.ALL);
+						OmlRead.getIri(collisionInfo.baseProperty), rangeIRI, RangeRestrictionKind.ALL);
 
 			}
 			if (object.getUpperBound()>1) {
@@ -71,7 +70,7 @@ public class EAttributeHandler implements ConversionHandler {
 			}
 			return collisionInfo.baseProperty;
 		}
-		return oml.addScalarProperty(vocabulary, name, domainIri, rangeIri, isFunctional);
+		return oml.addScalarProperty(vocabulary, name, domainIri, rangeIRI, isFunctional);
 	}
 
 	@Override
@@ -79,7 +78,6 @@ public class EAttributeHandler implements ConversionHandler {
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EAttribute object = (EAttribute) oObject;
 		final EClass domain = object.getEContainingClass();
-		final EDataType range = object.getEAttributeType();
 		
 		if (FilterUtil.shouldFilter(object)) {
 			return null;
@@ -98,15 +96,12 @@ public class EAttributeHandler implements ConversionHandler {
 			domainIri = aspectIri;
 		}
 
-		// find the range
-		String rangeIri = getIri(range, vocabulary, oml,visitor);
-
 		// create Property
 		Property property = null;
 		if (isAnnotationSet(object, AnnotationKind.isAnnotationProperty)) {
 			property = caseEAttributeToAnnotationProperty(object, oml, vocabulary);
 		} else {
-			property = handleEAttributeToScalarProperty(object, domainIri, rangeIri, oml, vocabulary, collections,visitor);
+			property = handleEAttributeToScalarProperty(object, domainIri, oml, vocabulary, collections,visitor);
 		}
 		return property;
 	}
