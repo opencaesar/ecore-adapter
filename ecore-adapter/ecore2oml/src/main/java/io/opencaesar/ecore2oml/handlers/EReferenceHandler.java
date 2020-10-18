@@ -206,11 +206,11 @@ public class EReferenceHandler implements ConversionHandler{
 			String refIRI, String rangeIRI) {
 		if (object.getUpperBound()>1) {
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
-					CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
+					CardinalityRestrictionKind.MAX, object.getUpperBound(), null);
 		}
 		if (object.getLowerBound()> 0) {
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,
-					CardinalityRestrictionKind.MIN, object.getLowerBound(), rangeIRI);
+					CardinalityRestrictionKind.MIN, object.getLowerBound(), null);
 		}
 	}
 

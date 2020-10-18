@@ -62,11 +62,11 @@ public class EAttributeHandler implements ConversionHandler {
 			}
 			if (object.getUpperBound()>1) {
 				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,
-						CardinalityRestrictionKind.MAX, object.getUpperBound(), rangeIRI);
+						CardinalityRestrictionKind.MAX, object.getUpperBound(), null);
 			}
 			if (object.getLowerBound()> 0) {
 				oml.addScalarPropertyCardinalityRestrictionAxiom(vocabulary, containerIRI, attribuiteIRI,
-						CardinalityRestrictionKind.MIN, object.getLowerBound(), rangeIRI);
+						CardinalityRestrictionKind.MIN, object.getLowerBound(), null);
 			}
 			return collisionInfo.baseProperty;
 		}
