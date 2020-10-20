@@ -220,19 +220,23 @@ public class Util {
 		for (SemanticFlagKind flag : flags) {
 			switch (flag) {
 			case asymmetric:
-				entity.setAsymmetric(value);
+				if (value)	entity.setAsymmetric(true);
+				else entity.setSymmetric(true);
 				break;
 			case irreflexive:
-				entity.setIrreflexive(value);
+				if(value)	entity.setIrreflexive(true);
+				else	entity.setReflexive(true);
 				break;
 			case reflexive:
-				entity.setReflexive(value);
+				if (value) entity.setReflexive(true);
+				else entity.setIrreflexive(true);
 				break;
 			case symmetric:
-				entity.setSymmetric(value);
+				if (value) entity.setSymmetric(true);
+				else entity.setAsymmetric(true);
 				break;
 			case transitive:
-				entity.setTransitive(value);
+				entity.setTransitive(true);
 				break;
 			}
 		}

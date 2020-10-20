@@ -141,8 +141,7 @@ public class EReferenceHandler implements ConversionHandler{
 		handleSubsets(object, entity,oml,vocabulary,collections);
 		Util.setSemanticFlags(Util.getIri(object), entity);
 		if (opposite!=null) {
-			//TODO: false is default, so this does not really do much 
-			//Util.setSemanticFlags(Util.getIri(opposite), entity,false);
+			Util.setSemanticFlags(Util.getIri(opposite), entity,false);
 		}
 		return entity;
 	}
