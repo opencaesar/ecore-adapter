@@ -6,5 +6,6 @@ public class Options {
 	
 	public List<Relationship> relationships;
 	public List<URIMapping> uriMapping;
+	public List<URISemanticFlags> semanticFlags;
 
 }

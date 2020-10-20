@@ -193,7 +193,7 @@ public class EClassHandler implements ConversionHandler {
 		}else {
 			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
 		}
-
+		Util.setSemanticFlags(classIRI, entity);
 		return entity;
 	}
 

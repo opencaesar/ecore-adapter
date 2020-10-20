@@ -7,6 +7,7 @@ import static io.opencaesar.oml.util.OmlRead.getMembers;
 import static org.eclipse.xtext.xbase.lib.IterableExtensions.exists;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EClass;
@@ -24,6 +25,7 @@ import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.oml.AnnotatedElement;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
+import io.opencaesar.oml.RelationEntity;
 import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlRead;
@@ -204,6 +206,34 @@ public class Util {
 			if (val!=null && !val.isBlank()) {
 				Literal value = oml.createQuotedLiteral(vocabulary, val, null, null);
 				oml.addAnnotation(object, DC+"#description", value);
+			}
+		}
+	}
+	
+	static public void setSemanticFlags(String iri,RelationEntity entity) {
+		setSemanticFlags(iri, entity, true);
+	}
+
+	
+	static public void setSemanticFlags(String iri, RelationEntity entity, boolean value) {
+		Set<SemanticFlagKind> flags = SemanticFlags.getInstance().getSemanticFlags(iri);
+		for (SemanticFlagKind flag : flags) {
+			switch (flag) {
+			case asymmetric:
+				entity.setAsymmetric(value);
+				break;
+			case irreflexive:
+				entity.setIrreflexive(value);
+				break;
+			case reflexive:
+				entity.setReflexive(value);
+				break;
+			case symmetric:
+				entity.setSymmetric(value);
+				break;
+			case transitive:
+				entity.setTransitive(value);
+				break;
 			}
 		}
 	}

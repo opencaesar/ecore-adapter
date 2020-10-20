@@ -110,8 +110,7 @@ public class EReferenceHandler implements ConversionHandler{
 					false, false, false, false, false);
 			
 			// the forward relation
-			final String forwardName = name;
-			ForwardRelation forward = oml.addForwardRelation(entity, forwardName);
+			ForwardRelation forward = oml.addForwardRelation(entity, name);
 			addLabelAnnotationIfNeeded(object,forward, oml, vocabulary);
 			Util.addTitle(object, forward, oml, vocabulary);
 			if (collisionInfo!=null) {
@@ -140,6 +139,11 @@ public class EReferenceHandler implements ConversionHandler{
 		}
 		handleCardinality(vocabulary, oml, object, sourceIri, refIRI, rangeIRI);
 		handleSubsets(object, entity,oml,vocabulary,collections);
+		Util.setSemanticFlags(Util.getIri(object), entity);
+		if (opposite!=null) {
+			//TODO: false is default, so this does not really do much 
+			//Util.setSemanticFlags(Util.getIri(opposite), entity,false);
+		}
 		return entity;
 	}
 

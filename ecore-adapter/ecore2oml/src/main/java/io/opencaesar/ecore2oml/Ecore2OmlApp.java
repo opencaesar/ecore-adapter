@@ -41,6 +41,7 @@ import com.google.inject.Injector;
 
 import io.opencaesar.ecore2oml.util.Options;
 import io.opencaesar.ecore2oml.util.RelationshipUtil;
+import io.opencaesar.ecore2oml.util.SemanticFlags;
 import io.opencaesar.ecore2oml.util.URIMapper;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
@@ -156,6 +157,7 @@ public class Ecore2OmlApp {
 			Options options = gson.fromJson(reader, Options.class);
 			URIMapper.init(options.uriMapping);
 			RelationshipUtil.init(options.relationships);
+			SemanticFlags.init(options.semanticFlags);
 			
 		}
 		
