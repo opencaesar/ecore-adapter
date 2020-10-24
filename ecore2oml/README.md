@@ -2,18 +2,16 @@
 
 [ ![Download](https://api.bintray.com/packages/opencaesar/ecore-adapter/ecore2oml/images/download.svg) ](https://bintray.com/opencaesar/ecore-adapter/ecore2oml/_latestVersion)
 
-A tool that translates [Ecore](https://www.eclipse.org/modeling/emf/) models to [OML](https://opencaesar.github.io/oml-spec) ontologies
+A tool that translates [Ecore](https://www.eclipse.org/modeling/emf/) models to [OML](https://opencaesar.github.io/oml-spec) vocabularies
 
 ## Run as CLI
 
 MacOS/Linux
 ```
-    cd ecore-adapter
     ./gradlew ecore2oml:run --args="..."
 ```
 Windows
 ```
-    cd ecore-adapter
     gradlew.bat ecore2oml:run --args="..."
 ```
 Args
