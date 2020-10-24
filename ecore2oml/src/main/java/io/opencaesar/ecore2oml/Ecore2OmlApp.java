@@ -67,20 +67,17 @@ public class Ecore2OmlApp {
 		required=true, 
 		order=2
 	)
-	
 	private String outputCatalogPath;
 	
 	@Parameter(
-			names= {"--options", "-op"}, 
-			description="Location of the options file (optional)",  
-			order=3
-		)
-	
+		names= {"--options", "-op"}, 
+		description="Location of the options (.json) file (Optional)",  
+		order=3
+	)
 	private String optionsPath;
 	
-
 	@Parameter(
-		names= {"-d", "--debug"}, 
+		names= {"--debug", "-d"}, 
 		description="Shows debug logging statements", 
 		order=4
 	)
