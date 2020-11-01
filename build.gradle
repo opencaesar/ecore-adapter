@@ -10,7 +10,7 @@ buildscript {
 }
 
 subprojects {
-	group = 'io.opencaesar.ecore'
+	group = 'io.opencaesar.adapters'
 	version = '0.4.0'
 	
 	ext.versions = [
