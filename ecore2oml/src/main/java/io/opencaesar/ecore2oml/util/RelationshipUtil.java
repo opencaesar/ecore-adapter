@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.oml.Vocabulary;
@@ -119,8 +118,7 @@ public class RelationshipUtil {
 		if (info.forwardName != null) {
 			return info.forwardName;
 		}
-		return StringExtensions.toFirstLower(Util.getMappedName(eClass)) + Constants.NAME_SEPERATOR
-				+ info.forwardPostFix;
+		return "";
 	}
 
 	public String getReverseName(EClassifier eClass, String iri) {
@@ -128,8 +126,7 @@ public class RelationshipUtil {
 		if (info.reverseName != null) {
 			return info.reverseName;
 		}
-		return StringExtensions.toFirstLower(Util.getMappedName(eClass)) + Constants.NAME_SEPERATOR
-				+ info.reversePostFix;
+		return  "";
 	}
 
 }
