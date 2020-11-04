@@ -116,10 +116,10 @@ public class RelationshipUtil {
 
 	public String getForwardName(EClassifier eClass, String iri) {
 		Relationship info = relationShips.get(iri);
-		if (info.forwardName != null) {
+		if (info.forwardName != null && !info.forwardName.isEmpty()) {
 			return info.forwardName;
 		}
-		if (info.forwardPostFix != null) {
+		if (info.forwardPostFix != null && !info.forwardPostFix.isEmpty()) {
 			return StringExtensions.toFirstLower(Util.getMappedName(eClass)) + Constants.NAME_SEPERATOR
 					+ info.forwardPostFix;
 		}
@@ -128,10 +128,10 @@ public class RelationshipUtil {
 
 	public String getReverseName(EClassifier eClass, String iri) {
 		Relationship info = relationShips.get(iri);
-		if (info.reverseName != null) {
+		if (info.reverseName != null && !info.reverseName.isEmpty()) {
 			return info.reverseName;
 		}
-		if (info.reversePostFix != null) {
+		if (info.reversePostFix != null && !info.reversePostFix.isEmpty()) {
 			return StringExtensions.toFirstLower(Util.getMappedName(eClass)) + Constants.NAME_SEPERATOR
 					+ info.reversePostFix;
 		}
