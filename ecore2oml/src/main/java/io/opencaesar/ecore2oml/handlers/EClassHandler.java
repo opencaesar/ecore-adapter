@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -20,7 +19,6 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Pair;
-import io.opencaesar.ecore2oml.util.Relationship;
 import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
@@ -36,8 +34,6 @@ public class EClassHandler implements ConversionHandler {
 	private static final String ETYPE = "eType";
 	private static final String DUPLICATES = "duplicates";
 	private static final String REDEFINES = "redefines";
-	private static final String SUBSETS = "subsets";
-
 	static private Logger LOGGER = LogManager.getLogger(EClassHandler.class);
 
 	@Override
@@ -45,23 +41,18 @@ public class EClassHandler implements ConversionHandler {
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EClass object = (EClass) eObject;
 		Pair<EReference, EReference> srcAndTarget=null;
-		boolean isRelationship = RelationshipUtil.getInstance().isRelationship(object, oml, vocabulary,visitor);
+		@SuppressWarnings("unchecked")
+		Map<EClass,Pair<EReference, EReference>> relationInfo = (Map<EClass,Pair<EReference, EReference>>)collections.get(CollectionKind.RelationShips);
+		boolean isRelationship = relationInfo!=null ? relationInfo.containsKey(object) : false;
 		if (isRelationship) {
-			srcAndTarget =  getSourceAndTaregt( object, oml, vocabulary,visitor);
+			srcAndTarget =  relationInfo.get(object);
 			LOGGER.info(getIri(object, vocabulary, oml,visitor) + "Relationship: " + srcAndTarget.source.getName() + " => " + srcAndTarget.target.getName());
-			/*if (srcAndTarget.source.getUpperBound()!=1 ||
-				srcAndTarget.target.getUpperBound()!=1) {
-				isRelationship = false;
-				LOGGER.debug(getIri(object, vocabulary, oml,visitor) + " Not  Relationship");
-			}*/
 		}
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;
 		Entity entity = null;
 		if (isRelationship) {
 			entity = convertEClassToRelationEntity(object,srcAndTarget, oml, vocabulary,visitor);
-			visitor.addConverted(srcAndTarget.source);
-			visitor.addConverted(srcAndTarget.target);
 		} else if (isAspect(object)) {
 			entity = oml.addAspect(vocabulary, getMappedName(object));
 		} else {
@@ -198,64 +189,6 @@ public class EClassHandler implements ConversionHandler {
 		Util.setSemanticFlags(classIRI, entity);
 		return entity;
 	}
-
-	
-	
-	private static Pair<EReference, EReference> getSourceAndTaregt(EClass object, OmlWriter oml,
-			Vocabulary vocabulary,Ecore2Oml e2o) {
-		Pair<EReference, EReference> state = new Pair<>();
-		boolean isRelationShip = RelationshipUtil.getInstance().isRelationship(object,  oml,vocabulary,e2o);
-		if (isRelationShip) {
-			Relationship info = RelationshipUtil.getInstance().getInfo(object, oml, vocabulary,e2o);
-			EList<EReference> refs = object.getEReferences();
-			for (EReference ref : refs) {
-				if (ref.getName().equals(info.source)) {
-					info.source = (ref.getName());
-					state.source = ref;
-				}else if (ref.getName().equals(info.target)) {
-					info.target = (ref.getName());
-					state.target = ref;
-				}else {
-					// check using sub sets
-					checkSubsets(ref, state, info);
-				}
-				if (state.source !=null && state.target!=null) {
-					break;
-				}
-			}
-		}
-		if (state.source==null && state.target==null) {
-			// if we could not find source and target we need to walk up the hierarchy 
-			EList<EClass> supers = object.getESuperTypes();
-			for (EClass eClass : supers) {
-				state =  getSourceAndTaregt( eClass, oml, vocabulary,e2o);
-				if (state.source !=null && state.target!=null) {
-					break;
-				}
-			}
-		}
-		return state;
-	}
-
-	static private void checkSubsets(EReference object, Pair<EReference, EReference> state, Relationship info) {
-		EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
-		if (subsetAnnotaion!=null) {
-			subsetAnnotaion.getReferences().forEach(superSet -> {
-				EReference superRef = (EReference)superSet;
-				if (superRef.getName().equals(info.source)) {
-					info.source = (object.getName());
-					state.source = object;
-					return;
-				}else if (superRef.getName().equals(info.target)) {
-					info.target = (object.getName());
-					state.target = object;
-					return;
-				}
-			});
-
-		}
-	}
-
 
 	static private boolean isAspect(EClass object) {
 		return (object.eIsProxy() || object.isAbstract() || object.isInterface())
