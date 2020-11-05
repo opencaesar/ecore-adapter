@@ -175,18 +175,46 @@ public class EClassHandler implements ConversionHandler {
 		final String targetIri = getIri(srcAndTarget.target.getEType(),vocabulary,oml, e2o);
 		final RelationEntity entity = oml.addRelationEntity(vocabulary, getMappedName(object), sourceIri, targetIri,
 				false, false, false, false, false, false, false);
+		Util.setSemanticFlags(classIRI, entity);
+		
 		String forwardName = RelationshipUtil.getInstance().getForwardName(object,classIRI);
 		if (!forwardName.isEmpty()) {
 			oml.addForwardRelation(entity, forwardName);
+			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (forward) => " + forwardName);
 		}
 		String reverseName = RelationshipUtil.getInstance().getReverseName(object,classIRI);
 		if (!reverseName.isEmpty()) {
 			oml.addReverseRelation(entity, reverseName);
-			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName + " - " + reverseName);
-		}else {
-			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => " + forwardName);
+			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (reverse) => " + reverseName);
 		}
-		Util.setSemanticFlags(classIRI, entity);
+		if (object == srcAndTarget.source.getEContainingClass()) {
+			String sourceName = getMappedName(srcAndTarget.source);
+			if (!sourceName.isEmpty()) {
+				oml.addSourceRelation(entity, sourceName);
+				LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (source) => " + sourceName);
+			}
+			if (srcAndTarget.source.getEOpposite() != null) {
+				String inverseSourceName = getMappedName(srcAndTarget.source.getEOpposite());
+				if (!inverseSourceName.isEmpty()) {
+					oml.addInverseSourceRelation(entity, inverseSourceName);
+					LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (inverse source) => " + inverseSourceName);
+				}
+			}
+		}
+		if (object == srcAndTarget.target.getEContainingClass()) {
+			String targetName = getMappedName(srcAndTarget.target);
+			if (!targetName.isEmpty()) {
+				oml.addTargetRelation(entity, targetName);
+				LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (target) => " + targetName);
+			}
+			if (srcAndTarget.target.getEOpposite() != null) {
+				String inverseTargetName = getMappedName(srcAndTarget.target.getEOpposite());
+				if (!inverseTargetName.isEmpty()) {
+					oml.addInverseTargetRelation(entity, inverseTargetName);
+					LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (inverse target) => " + inverseTargetName);
+				}
+			}
+		}
 		return entity;
 	}
 
