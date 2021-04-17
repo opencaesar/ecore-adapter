@@ -17,9 +17,9 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import io.opencaesar.ecore2oml.Ecore2Oml;
+import io.opencaesar.ecore2oml.options.RelationshipUtil;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Pair;
-import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.Entity;

@@ -11,10 +11,10 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
+import io.opencaesar.ecore2oml.options.Relationship;
+import io.opencaesar.ecore2oml.options.RelationshipUtil;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Pair;
-import io.opencaesar.ecore2oml.util.Relationship;
-import io.opencaesar.ecore2oml.util.RelationshipUtil;
 import io.opencaesar.ecore2oml.util.Util;
 
 public class EClassConversionParticipant extends ConversionParticipant {
