@@ -22,6 +22,8 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.Ecore2Oml;
+import io.opencaesar.ecore2oml.options.SemanticFlags;
+import io.opencaesar.ecore2oml.options.URIMapper;
 import io.opencaesar.oml.AnnotatedElement;
 import io.opencaesar.oml.Literal;
 import io.opencaesar.oml.Member;
