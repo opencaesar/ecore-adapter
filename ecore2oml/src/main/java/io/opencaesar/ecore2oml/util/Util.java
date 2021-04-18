@@ -224,6 +224,11 @@ public class Util {
 		}
 	}
 	
+	static public boolean defaultsToAspect(EClass object) {
+		return (object.eIsProxy() || object.isAbstract() || object.isInterface())
+				&& object.getESuperTypes().stream().allMatch(i -> defaultsToAspect(i));
+	}
+	
 	static public void setSemanticFlags(String iri,RelationEntity entity) {
 		setSemanticFlags(iri, entity, true);
 	}
