@@ -35,7 +35,6 @@ public class AspectUtil {
 	}
 
 	private void addAspect(String root, Aspect aspect) {
-		System.out.println("Main class or Sub class to aspect " + root);
 		aspects.put(root, aspect);
 	}
 	
@@ -68,7 +67,6 @@ public class AspectUtil {
 			if (!Util.defaultsToAspect(type)) {
 				String iri = Util.getLocalEClassIri(type);
 				if (!aspects.containsKey(iri)) {
-					System.out.println("Forced Super Concept to aspect " + iri);
 					aspects.put(iri,new Aspect(iri, null, matchedInfo.concept));
 					addSupersAsAspects(type,matchedInfo);
 				}
