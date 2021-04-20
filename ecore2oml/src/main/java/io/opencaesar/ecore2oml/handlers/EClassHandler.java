@@ -220,11 +220,11 @@ public class EClassHandler implements ConversionHandler {
 	private void handleEReferenceDuplicate(EAnnotation annotation, Entity entity, EReference element, OmlWriter oml,
 			Vocabulary vocabulary,Ecore2Oml e2o) {
 		EClassifier type = element.getEType();
-		if (element.getEOpposite() != null) {
-			EAnnotation typeAnnotation = Util.getAnnotation(annotation, element.getName());
-			if (typeAnnotation != null) {
-				String val = typeAnnotation.getDetails().get(ETYPE);
-				// UGLY !!
+		EAnnotation typeAnnotation = Util.getAnnotation(annotation, element.getName());
+		if (typeAnnotation != null && typeAnnotation.getDetails()!=null ) {
+			String val = typeAnnotation.getDetails().get(ETYPE);
+			// UGLY !!
+			if (val!=null) {
 				String typeName = val.substring(5);
 				type = type.getEPackage().getEClassifier(typeName);
 			}
