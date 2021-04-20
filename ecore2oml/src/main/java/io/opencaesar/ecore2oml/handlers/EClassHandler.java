@@ -43,8 +43,8 @@ public class EClassHandler implements ConversionHandler {
 	private static final String ETYPE = "eType";
 	private static final String DUPLICATES = "duplicates";
 	private static final String REDEFINES = "redefines";
-	private static final String CONCEPT_POSTFIX = "_concept";
-	private static final String RELATION_POSTFIX = "_relation";
+	private static final String CONCEPT_POSTFIX = "_Concept";
+	private static final String RELATION_POSTFIX = "_Relation";
 	static private Logger LOGGER = LogManager.getLogger(EClassHandler.class);
 
 	@Override
