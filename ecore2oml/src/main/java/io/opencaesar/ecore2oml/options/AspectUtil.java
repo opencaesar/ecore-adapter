@@ -19,18 +19,11 @@ public class AspectUtil {
 	
 	
 	private Map<String, Aspect> aspects = new HashMap<>();
-	static private AspectUtil _instance = new AspectUtil();
-	static private Set<Pair<EClass, Aspect>> toAddSupers = new HashSet<>();
+	private Set<Pair<EClass, Aspect>> toAddSupers = new HashSet<>();
 	
-	static public AspectUtil getInstance() {
-		return _instance;
-	}
-
-	static public void init(List<Aspect> aspects) {
-		synchronized (AspectUtil.class) {
-			for (Aspect aspect : aspects) {
-				_instance.addAspect(aspect.root, aspect);
-			}
+	public void init(List<Aspect> aspects) {
+		for (Aspect aspect : aspects) {
+			addAspect(aspect.root, aspect);
 		}
 	}
 

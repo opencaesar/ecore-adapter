@@ -20,7 +20,6 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.options.Aspect;
-import io.opencaesar.ecore2oml.options.AspectUtil;
 import io.opencaesar.ecore2oml.options.RelationshipUtil;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Pair;
@@ -54,9 +53,8 @@ public class EClassHandler implements ConversionHandler {
 		Pair<EReference, EReference> srcAndTarget=null;
 		@SuppressWarnings("unchecked")
 		Map<EClass,Pair<EReference, EReference>> relationInfo = (Map<EClass,Pair<EReference, EReference>>)collections.get(CollectionKind.RelationShips);
-		
 		boolean isRelationship = false;
-		boolean isForcedAspect = AspectUtil.getInstance().basicIsAspect(object);
+		boolean isForcedAspect = visitor.context.aspectUtil.basicIsAspect(object);
 		if (!isForcedAspect) {
 			isRelationship = relationInfo!=null ? relationInfo.containsKey(object) : false;
 		}
@@ -92,8 +90,8 @@ public class EClassHandler implements ConversionHandler {
 	}
 
 	private void createSubElementsOfForcedAspect(Entity entity, EClass object, Vocabulary vocabulary, OmlWriter oml, Ecore2Oml visitor) {
-		Aspect aspectInfo = AspectUtil.getInstance().getAspectInfo(object);
-		List<EClass> eSuperTypes = object.getESuperTypes().stream().filter(a -> AspectUtil.getInstance().basicIsAspect(a)).collect(Collectors.toList());
+		Aspect aspectInfo = visitor.context.aspectUtil.getAspectInfo(object);
+		List<EClass> eSuperTypes = object.getESuperTypes().stream().filter(a -> visitor.context.aspectUtil.basicIsAspect(a)).collect(Collectors.toList());
 		
 		if (aspectInfo.concept!=null && aspectInfo.concept.subConcept) {
 			// create the sub class concept
@@ -105,7 +103,7 @@ public class EClassHandler implements ConversionHandler {
 			}
 			for (EClass superType : eSuperTypes) {
 				superIri = getIri(superType, vocabulary, oml,visitor);
-				Aspect superAspectInfo = AspectUtil.getInstance().getAspectInfo(superIri);
+				Aspect superAspectInfo = visitor.context.aspectUtil.getAspectInfo(superIri);
 				if (superAspectInfo != null && superAspectInfo.concept !=null && superAspectInfo.concept.subConcept) {
 					oml.addSpecializationAxiom(vocabulary, OmlRead.getIri(conceptEntity), superIri + CONCEPT_POSTFIX);
 				}
@@ -123,7 +121,7 @@ public class EClassHandler implements ConversionHandler {
 			}
 			for (EClass superType : eSuperTypes) {
 				superIri = getIri(superType, vocabulary, oml,visitor) ;
-				Aspect superAspectInfo = AspectUtil.getInstance().getAspectInfo(superIri);
+				Aspect superAspectInfo = visitor.context.aspectUtil.getAspectInfo(superIri);
 				if (superAspectInfo != null && superAspectInfo.relation !=null) {
 					oml.addSpecializationAxiom(vocabulary, OmlRead.getIri(relEntity), superIri + RELATION_POSTFIX);
 				}
