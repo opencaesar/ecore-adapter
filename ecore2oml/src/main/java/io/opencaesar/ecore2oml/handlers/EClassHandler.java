@@ -44,6 +44,7 @@ public class EClassHandler implements ConversionHandler {
 	private static final String REDEFINES = "redefines";
 	private static final String CONCEPT_POSTFIX = "_concept";
 	private static final String RELATION_POSTFIX = "_relation";
+
 	static private Logger LOGGER = LogManager.getLogger(EClassHandler.class);
 
 	@Override
@@ -92,7 +93,6 @@ public class EClassHandler implements ConversionHandler {
 	private void createSubElementsOfForcedAspect(Entity entity, EClass object, Vocabulary vocabulary, OmlWriter oml, Ecore2Oml visitor) {
 		Aspect aspectInfo = visitor.context.aspectUtil.getAspectInfo(object);
 		List<EClass> eSuperTypes = object.getESuperTypes().stream().filter(a -> visitor.context.aspectUtil.basicIsAspect(a)).collect(Collectors.toList());
-		
 		if (aspectInfo.concept!=null && aspectInfo.concept.subConcept) {
 			// create the sub class concept
 			String name = getMappedName(object) + CONCEPT_POSTFIX;

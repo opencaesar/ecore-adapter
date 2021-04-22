@@ -20,7 +20,6 @@ public class AspectUtil {
 	
 	private Map<String, Aspect> aspects = new HashMap<>();
 	private Set<Pair<EClass, Aspect>> toAddSupers = new HashSet<>();
-	
 	public void init(List<Aspect> aspects) {
 		for (Aspect aspect : aspects) {
 			addAspect(aspect.root, aspect);
