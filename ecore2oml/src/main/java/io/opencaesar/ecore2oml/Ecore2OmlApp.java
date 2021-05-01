@@ -40,9 +40,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.inject.Injector;
 
 import io.opencaesar.ecore2oml.options.Options;
-import io.opencaesar.ecore2oml.options.RelationshipUtil;
-import io.opencaesar.ecore2oml.options.SemanticFlags;
-import io.opencaesar.ecore2oml.options.URIMapper;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
@@ -152,11 +149,7 @@ public class Ecore2OmlApp {
 			Gson gson = new Gson();
 			JsonReader reader = new JsonReader(new FileReader(optionsPath));
 			Options options = gson.fromJson(reader, Options.class);
-			URIMapper.init(options.uriMapping);
-			RelationshipUtil.init(options.relationships);
-			conversionContext.setAspectOptions(options);
-			SemanticFlags.init(options.semanticFlags);
-			
+			conversionContext.setOptions(options);
 		}
 		
 
@@ -186,7 +179,7 @@ public class Ecore2OmlApp {
 						e2o.run();
 						dependency.putAll(e2o.getDependencies());
 						outputResourceURIs.add (outputResourceURI);
-						String iri = Util.getIri(ePackage);
+						String iri = Util.getIri(ePackage, conversionContext);
 						handled.add(iri);
 					}
 				}
