@@ -1,5 +1,11 @@
 package io.opencaesar.ecore2oml;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+
 import io.opencaesar.ecore2oml.options.AspectUtil;
 import io.opencaesar.ecore2oml.options.Options;
 import io.opencaesar.ecore2oml.options.RelationshipUtil;
@@ -16,7 +22,10 @@ public class ConversionContext {
 	public ConversionContext() {
 	}
 
-	public void setOptions(Options options) {
+	public void setOptions(String optionsPath) throws FileNotFoundException {
+		Gson gson = new Gson();
+		JsonReader reader = new JsonReader(new FileReader(optionsPath));
+		Options options = gson.fromJson(reader, Options.class);
 		aspectUtil.init(options.aspects);
 		relationUtil.init(options.relationships);
 		uriMapper.init(options.uriMapping);

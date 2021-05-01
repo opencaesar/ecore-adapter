@@ -1,7 +1,6 @@
 package io.opencaesar.ecore2oml;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,11 +34,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import com.google.inject.Injector;
 
-import io.opencaesar.ecore2oml.options.Options;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
@@ -146,10 +142,7 @@ public class Ecore2OmlApp {
 		final OmlCatalog catalog = OmlCatalog.create(catalogURL);
 		ConversionContext conversionContext = new ConversionContext();		
 		if (optionsPath!=null) {
-			Gson gson = new Gson();
-			JsonReader reader = new JsonReader(new FileReader(optionsPath));
-			Options options = gson.fromJson(reader, Options.class);
-			conversionContext.setOptions(options);
+			conversionContext.setOptions(optionsPath);
 		}
 		
 
