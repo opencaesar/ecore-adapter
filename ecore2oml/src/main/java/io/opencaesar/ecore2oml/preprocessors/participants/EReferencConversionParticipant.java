@@ -1,3 +1,4 @@
+
 package io.opencaesar.ecore2oml.preprocessors.participants;
 
 import static io.opencaesar.ecore2oml.util.Util.getMappedName;
@@ -14,9 +15,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
-import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
+import io.opencaesar.ecore2oml.preprocessors.ERefGroups;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
-import io.opencaesar.ecore2oml.preprocessors.TwoERefKey;
 import io.opencaesar.ecore2oml.util.FilterUtil;
 
 public class EReferencConversionParticipant extends ConversionParticipant {
@@ -30,23 +30,15 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		if (FilterUtil.shouldFilter(eRef)) {
 			return;
 		}
+		ERefGroups groups = (ERefGroups)collections.get(CollectionKind.RefGroups);
+		if (groups==null) {
+			groups = new ERefGroups();
+			collections.put(CollectionKind.RefGroups, groups);
+		}
+		groups.addERef(eRef);
 		if (eRef.getEOpposite() == null) {
 			_handleEReference(collections, eRef, name);
-		} else {
-			_handleEOppositeRefernces(collections, eRef, name);
-		}
-	}
-
-	private void _handleEOppositeRefernces(Map<CollectionKind, Object> collections, EReference eRef, String name) {
-		CollidingEOppositeData collInfo = (CollidingEOppositeData) collections
-				.get(CollectionKind.CollidingEOppositeRefernces);
-		if (collInfo == null) {
-			collInfo = new CollidingEOppositeData();
-			collections.put(CollectionKind.CollidingEOppositeRefernces, collInfo);
-		}
-		collInfo.addForward(eRef);
-		collInfo.addReverse(eRef);
-		LOGGER.debug(name);
+		} 
 	}
 
 	private void _handleEReference(Map<CollectionKind, Object> collections, EReference eRef, final String name) {
@@ -64,34 +56,6 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 		}
 		info.add(eRef);
 		LOGGER.debug(name);
-	}
-
-	private void _postProcessEOpposite(Map<CollectionKind, Object> collections) {
-		LOGGER.debug("Post Processing : EOpposite");
-		CollidingEOppositeData collInfo = (CollidingEOppositeData) collections
-				.get(CollectionKind.CollidingEOppositeRefernces);
-		if (collInfo == null) {
-			return;
-		}
-		int before = collInfo.size();
-		Set<TwoERefKey> cleanMe = new HashSet<>();
-		collInfo.finish();
-		Set<Entry<TwoERefKey, Set<EReference>>> enteries = collInfo.getForward().entrySet();
-		for (Entry<TwoERefKey, Set<EReference>> entry : enteries) {
-			TwoERefKey key = entry.getKey();
-			Set<EReference> val = entry.getValue();
-			if (val.size() > 1) {
-				LOGGER.debug(getMappedName(key.forward) + " ==> " + val.size());
-			} else {
-				cleanMe.add(key);
-			}
-		}
-
-		for (TwoERefKey key : cleanMe) {
-			collInfo.getForward().remove(key);
-		}
-		LOGGER.debug("Size befoe = " + before + ", Size after = " + collInfo.size());
-
 	}
 
 	private void _postProcessEReference(Map<CollectionKind, Object> collections) {
@@ -127,7 +91,10 @@ public class EReferencConversionParticipant extends ConversionParticipant {
 	@Override
 	public void postProcess(Map<CollectionKind, Object> collections) {
 		_postProcessEReference(collections);
-		_postProcessEOpposite(collections);
+		ERefGroups groups = (ERefGroups)collections.get(CollectionKind.RefGroups);
+		if (groups!=null) {
+			groups.finish();
+		}
 	}
 
 }

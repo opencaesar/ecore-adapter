@@ -20,7 +20,7 @@ import org.eclipse.emf.ecore.EReference;
 import io.opencaesar.ecore2oml.AnnotationKind;
 import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
-import io.opencaesar.ecore2oml.preprocessors.CollidingEOppositeData;
+import io.opencaesar.ecore2oml.preprocessors.ERefGroups;
 import io.opencaesar.ecore2oml.preprocessors.RefCollisionInfo;
 import io.opencaesar.ecore2oml.util.Constants;
 import io.opencaesar.ecore2oml.util.FilterUtil;
@@ -63,12 +63,11 @@ public class EReferenceHandler implements ConversionHandler{
 		final boolean isInverseFunctional = (opposite != null) && opposite.getLowerBound() == 1;
 		@SuppressWarnings("unchecked")
 		Map<String, RefCollisionInfo> names = (Map<String, RefCollisionInfo>) collections.get(CollectionKind.CollidingRefernces);
-		CollidingEOppositeData collidingEOpposite = (CollidingEOppositeData) collections.get(CollectionKind.CollidingEOppositeRefernces);
+		ERefGroups refGroups = (ERefGroups)collections.get(CollectionKind.RefGroups);
 		
 		RefCollisionInfo collisionInfo = names!=null ? names.get(name) : null;
 
-
-		if (opposite!=null && collidingEOpposite!=null &&  collidingEOpposite.shouldSkip(object)) {
+		if (opposite!=null && refGroups!=null && refGroups.shouldSkip(object)) {
 			addFiltered(object,collections);
 			return null;
 		}
