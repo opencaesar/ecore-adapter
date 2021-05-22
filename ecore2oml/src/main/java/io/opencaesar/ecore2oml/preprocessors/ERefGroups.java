@@ -132,7 +132,7 @@ public class ERefGroups {
 		
 		@Override
 		public String toString() {
-			return ref.toString();
+			return getRefLabel(ref);
 		}
 	}
 	
@@ -253,6 +253,9 @@ public class ERefGroups {
 		ID.set(0);
 	}
 	
+	private String getRefLabel(EReference ref) {
+		return  ref.getEContainingClass().getName() + "_" + ref.getName();
+	}
 	
 	public void addERef(EReference ref) {
 		// if it is handled already then skip
@@ -273,6 +276,10 @@ public class ERefGroups {
 
 
 	private void pushTograph(EReference ref, Collection<EReference> subs) {
+		if (subs.isEmpty()) {
+			graph.getOrCreateNode(ref);
+			graph.getOrCreateNode(ref.getEOpposite());
+		}
 		for (EReference sub : subs) {
 			graph.addRef(ref, sub);
 		}		
