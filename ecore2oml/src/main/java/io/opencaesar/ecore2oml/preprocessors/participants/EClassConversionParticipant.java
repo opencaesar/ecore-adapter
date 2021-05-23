@@ -1,9 +1,7 @@
 package io.opencaesar.ecore2oml.preprocessors.participants;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
@@ -98,24 +96,11 @@ public class EClassConversionParticipant extends ConversionParticipant {
 	private void addRelation(EClass object, Pair<EReference, EReference> srcAndTarget,
 			Map<CollectionKind, Object> collections) {
 		Map<EClass,Pair<EReference, EReference>> relationInfo = (Map<EClass,Pair<EReference, EReference>>)collections.get(CollectionKind.RelationShips);
-		Set<EReference> skipSet = (Set<EReference>)collections.get(CollectionKind.SKIP_EREFERENCES);
 		if (relationInfo==null) {
 			relationInfo = new HashMap<>();
 			collections.put(CollectionKind.RelationShips, relationInfo);
-			skipSet = new HashSet<>();
-			collections.put(CollectionKind.SKIP_EREFERENCES, skipSet);
 		}
 		relationInfo.put(object, srcAndTarget);		
-		addFilteredRefs(skipSet, srcAndTarget.source);
-		addFilteredRefs(skipSet, srcAndTarget.target);
-		
-	}
-
-	private void addFilteredRefs(Set<EReference> skipSet, EReference src) {
-		skipSet.add(src);
-		if (src.getEOpposite()!=null) {
-			skipSet.add(src.getEOpposite());
-		}
 	}
 
 	@Override

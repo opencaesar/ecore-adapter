@@ -5,7 +5,6 @@ public enum CollectionKind {
 	CollidingRefernces,
 	RelationShips,
 	RefGroups,
-	SKIP_EREFERENCES,
 	SubSets,
 	Filtered
 }

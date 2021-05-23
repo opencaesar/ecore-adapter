@@ -26,12 +26,9 @@ import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.CardinalityRestrictionKind;
 import io.opencaesar.oml.Concept;
 import io.opencaesar.oml.Entity;
-import io.opencaesar.oml.InverseSourceRelation;
-import io.opencaesar.oml.InverseTargetRelation;
+import io.opencaesar.oml.Predicate;
 import io.opencaesar.oml.RangeRestrictionKind;
 import io.opencaesar.oml.RelationEntity;
-import io.opencaesar.oml.SourceRelation;
-import io.opencaesar.oml.TargetRelation;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.util.OmlWriter;
@@ -65,14 +62,14 @@ public class EClassHandler implements ConversionHandler {
 		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
 		boolean isDuplicate = annotation == null ? false : true;
 		Entity entity = null;
-		if (isRelationship) {
-			entity = convertEClassToRelationEntity(object,srcAndTarget, oml, vocabulary,visitor);
-		} else if (Util.defaultsToAspect(object)) {
+		if (Util.defaultsToAspect(object)) {
 			entity = oml.addAspect(vocabulary, getMappedName(object));
 		} else if (isForcedAspect){
 			entity = oml.addAspect(vocabulary, getMappedName(object));
 			createSubElementsOfForcedAspect(entity,object,vocabulary,oml,visitor);
-		}else {
+		} else if (isRelationship) {
+			entity = convertEClassToRelationEntity(object,srcAndTarget, oml, vocabulary,visitor);
+		} else {
 			entity = oml.addConcept(vocabulary, getMappedName(object));
 		}
 		for (EClass eSuperType : object.getESuperTypes()) {
@@ -243,42 +240,17 @@ public class EClassHandler implements ConversionHandler {
 			oml.addReverseRelation(entity, reverseName);
 			LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (reverse) => " + reverseName);
 		}
-		if (object == srcAndTarget.source.getEContainingClass()) {
-			String sourceName = getMappedName(srcAndTarget.source);
-			if (!sourceName.isEmpty()) {
-				SourceRelation sourceRelation = oml.addSourceRelation(entity, sourceName);
-				Util.addTitleAnnotationIfNeeded(srcAndTarget.source, sourceRelation, oml, vocabulary);
-				Util.addLabelAnnotation(srcAndTarget.source, sourceRelation, oml, vocabulary);
-				LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (source) => " + sourceName);
-			}
-			if (srcAndTarget.source.getEOpposite() != null) {
-				String inverseSourceName = getMappedName(srcAndTarget.source.getEOpposite());
-				if (!inverseSourceName.isEmpty()) {
-					InverseSourceRelation rel = oml.addInverseSourceRelation(entity, inverseSourceName);
-					Util.addTitleAnnotationIfNeeded(srcAndTarget.source.getEOpposite(), rel, oml, vocabulary);
-					Util.addLabelAnnotation(srcAndTarget.source.getEOpposite(), rel, oml, vocabulary);
-					LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (inverse source) => " + inverseSourceName);
-				}
-			}
-		}
-		if (object == srcAndTarget.target.getEContainingClass()) {
-			String targetName = getMappedName(srcAndTarget.target);
-			if (!targetName.isEmpty()) {
-				TargetRelation targetRelation = oml.addTargetRelation(entity, targetName);
-				Util.addTitleAnnotationIfNeeded(srcAndTarget.target, targetRelation, oml, vocabulary);
-				Util.addLabelAnnotation(srcAndTarget.target, targetRelation, oml, vocabulary);
-				LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (target) => " + targetName);
-			}
-			if (srcAndTarget.target.getEOpposite() != null) {
-				String inverseTargetName = getMappedName(srcAndTarget.target.getEOpposite());
-				if (!inverseTargetName.isEmpty()) {
-					InverseTargetRelation rel = oml.addInverseTargetRelation(entity, inverseTargetName);
-					Util.addTitleAnnotationIfNeeded(srcAndTarget.target.getEOpposite(), rel, oml, vocabulary);
-					Util.addLabelAnnotation(srcAndTarget.target.getEOpposite(), rel, oml, vocabulary);
-					LOGGER.debug(Util.getIri(object,vocabulary,oml,e2o) + " => (inverse target) => " + inverseTargetName);
-				}
-			}
-		}
+		
+		
+		Predicate[] antecedent = {
+				oml.createRelationEntityPredicate(vocabulary, classIRI, "s", "r", "t")
+		};
+		Predicate[] consequent = {
+				oml.createRelationPredicate(vocabulary, getIri(srcAndTarget.source,vocabulary,oml,e2o), "r", "s"),
+				oml.createRelationPredicate(vocabulary, getIri(srcAndTarget.target,vocabulary,oml,e2o), "r", "t")
+		};
+		oml.addRule(vocabulary, object.getName()+"_Rule", consequent, antecedent);
+		
 		return entity;
 	}
 }
