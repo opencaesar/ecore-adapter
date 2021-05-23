@@ -38,16 +38,22 @@ import io.opencaesar.oml.util.OmlWriter;
 public class EReferenceHandler implements ConversionHandler{
 	
 	private static final String SUBSETS = "subsets";
+	private static final String REVERSE_PREFIX = "InverseOf_";
 	
-	private String getRelationShipName(EReference eRef) {
-		return  getMappedName(eRef,true);
+	private String getRelationShipName(EReference eRef,Map<CollectionKind, Object> collections) {
+		String prefix = "";
+		ERefGroups refGroups = (ERefGroups)collections.get(CollectionKind.RefGroups);
+		if (eRef.getEOpposite()== null && shouldReverse(refGroups, eRef)) {
+			prefix = REVERSE_PREFIX;
+		}
+		return  prefix + getMappedName(eRef,true);
 	}
 	
 	public  EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
-		final String entityName =  getRelationShipName(object);
+		final String entityName =  getRelationShipName(object, collections);
 		@SuppressWarnings("unchecked")
 		Set<EReference> skipSet = (Set<EReference>)collections.get(CollectionKind.SKIP_EREFERENCES);
 		if (skipSet==null) skipSet = Collections.emptySet();
@@ -107,26 +113,27 @@ public class EReferenceHandler implements ConversionHandler{
 		RelationEntity entity=null;
 
 		if (collisionInfo==null || collisionInfo.entity==null) {
+			// if we will reverse then source and target should be flipped
+			if (opposite==null && shouldReverse(refGroups, object)) {
+				String temp = sourceIri;
+				sourceIri = targetIri;
+				targetIri = temp;
+			}
+			
 			entity = oml.addRelationEntity(vocabulary, entityName, sourceIri, targetIri, isFunctional, isInverseFunctional,
 					false, false, false, false, false);
 			
-			// the forward relation
-			ForwardRelation forward = oml.addForwardRelation(entity, name);
-			Util.addTitleAnnotationIfNeeded(object, forward, oml, vocabulary);
-			Util.addLabelAnnotation(object,forward, oml, vocabulary);
-			if (collisionInfo!=null) {
-				collisionInfo.entity = entity;
-				collisionInfo.forward = forward;
-			}
-			// the reverse relation
-			if (opposite != null) {
-				String reverseName = getMappedName(opposite);
-				if (isAnnotationSet(object, AnnotationKind.reverseName)) {
-					reverseName = getAnnotationValue(object, AnnotationKind.reverseName);
+			if (opposite ==null) {
+				if (shouldReverse(refGroups,object)) {
+					System.out.println("Reversing : " + object.getName());
+					addReverse(vocabulary, oml, object, object, entity);
+				}else {
+					addForward(vocabulary, oml, object, name, collisionInfo, entity);
 				}
-				ReverseRelation reverse = oml.addReverseRelation(entity, reverseName);
-				Util.addTitleAnnotationIfNeeded(opposite, reverse, oml, vocabulary);
-				Util.addLabelAnnotation(opposite,reverse, oml, vocabulary);
+			}
+			else {
+				addForward(vocabulary, oml, object, name, collisionInfo, entity);
+				addReverse(vocabulary, oml, object, opposite, entity);
 			}
 		}
 		
@@ -145,6 +152,35 @@ public class EReferenceHandler implements ConversionHandler{
 			Util.setSemanticFlags(Util.getIri(opposite, visitor.context), entity,false,visitor.context);
 		}
 		return entity;
+	}
+
+	private boolean shouldReverse(ERefGroups refGroups, EReference object) {
+		if (refGroups!=null) {
+			return refGroups.shouldSkip(object);
+		}
+		return false;
+	}
+
+	private void addForward(Vocabulary vocabulary, OmlWriter oml, EReference object, final String name,
+			RefCollisionInfo collisionInfo, RelationEntity entity) {
+		ForwardRelation forward = oml.addForwardRelation(entity, name);
+		Util.addTitleAnnotationIfNeeded(object, forward, oml, vocabulary);
+		Util.addLabelAnnotation(object,forward, oml, vocabulary);
+		if (collisionInfo!=null) {
+			collisionInfo.entity = entity;
+			collisionInfo.forward = forward;
+		}
+	}
+
+	private void addReverse(Vocabulary vocabulary, OmlWriter oml, EReference object, final EReference opposite,
+			RelationEntity entity) {
+		String reverseName = getMappedName(opposite);
+		if (isAnnotationSet(object, AnnotationKind.reverseName)) {
+			reverseName = getAnnotationValue(object, AnnotationKind.reverseName);
+		}
+		ReverseRelation reverse = oml.addReverseRelation(entity, reverseName);
+		Util.addTitleAnnotationIfNeeded(opposite, reverse, oml, vocabulary);
+		Util.addLabelAnnotation(opposite,reverse, oml, vocabulary);
 	}
 
 	private void addFiltered(EReference object, Map<CollectionKind, Object> collections) {
@@ -177,13 +213,13 @@ public class EReferenceHandler implements ConversionHandler{
 		if (subSets!=null) {
 			subSets.forEach(object -> {
 				EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
-				String subSetRelationName = getRelationShipName(object);
+				String subSetRelationName = getRelationShipName(object,collections);
 				String subSetIRI = Util.buildIRIFromClassName(object.getEType().getEPackage(), subSetRelationName, visitor.context);
 				if (subsetAnnotaion!=null) {
 					subsetAnnotaion.getReferences().forEach(superSet -> {
 						EReference superRef = (EReference)superSet;
 						if (!isFiltered(superRef,collections)) {
-							String superSetRelationName = getRelationShipName(superRef);
+							String superSetRelationName = getRelationShipName(superRef, collections);
 							String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName,visitor.context);
 							oml.addSpecializationAxiom(vocabulary, subSetIRI, superSetIRI);
 						}

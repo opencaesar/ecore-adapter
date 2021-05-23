@@ -240,10 +240,7 @@ public class ERefGroups {
 
 		private void filterCollection(Set<EReference> refs) {
 			for (EReference ref : refs ) {
-				// do not filter ERef with no EOposite
-				if (ref.getEOpposite()!=null) {
-					toSkip.add(ref);
-				}
+				toSkip.add(ref);
 			}
 		}
 		
@@ -258,6 +255,9 @@ public class ERefGroups {
 	}
 	
 	public void addERef(EReference ref) {
+		if (getRefLabel(ref).contains("substitution")) {
+			System.out.println("Bad");
+		}
 		// if it is handled already then skip
 		if (ref.getEOpposite()!=null) {
 			addRefToGraph(ref);
@@ -298,9 +298,9 @@ public class ERefGroups {
 				EReference superRef = (EReference)sub;
 				ret.add(superRef);
 				ret.addAll(getSubSets(superRef));
-				memory.put(ref, ret);
-				return ret;
 			}
+			memory.put(ref, ret);
+			return ret;
 		}
 		memory.put(ref, Collections.emptySet());
 		return Collections.emptySet();
