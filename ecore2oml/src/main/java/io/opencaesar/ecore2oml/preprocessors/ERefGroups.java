@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
@@ -26,6 +28,7 @@ public class ERefGroups {
 	private Set<EReference> toSkip = new HashSet<>();
 	private Graph graph = new Graph();
 	private Map<EReference, Set<EReference>> memory = new HashMap<>();
+	private Logger LOGGER = LogManager.getLogger(ERefGroups.class);
 	private class Graph {
 		List<Node> nodes = new ArrayList<>();
 		Map<EReference, Node> refToNode = new HashMap<>();
@@ -255,9 +258,6 @@ public class ERefGroups {
 	}
 	
 	public void addERef(EReference ref) {
-		if (getRefLabel(ref).contains("substitution")) {
-			System.out.println("Bad");
-		}
 		// if it is handled already then skip
 		if (ref.getEOpposite()!=null) {
 			addRefToGraph(ref);
@@ -317,7 +317,7 @@ public class ERefGroups {
 		for (Group group : groups) {
 			group.finish();
 		}
-		System.out.println(this);
+		LOGGER.debug(this);
 	}
 	
 	@Override

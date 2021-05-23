@@ -7,12 +7,14 @@ import static io.opencaesar.ecore2oml.util.Util.getMappedName;
 import static io.opencaesar.ecore2oml.util.Util.isAnnotationSet;
 import static io.opencaesar.ecore2oml.util.Util.memberExists;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -125,7 +127,6 @@ public class EReferenceHandler implements ConversionHandler{
 			
 			if (opposite ==null) {
 				if (shouldReverse(refGroups,object)) {
-					System.out.println("Reversing : " + object.getName());
 					addReverse(vocabulary, oml, object, object, entity);
 				}else {
 					addForward(vocabulary, oml, object, name, collisionInfo, entity);
@@ -212,26 +213,56 @@ public class EReferenceHandler implements ConversionHandler{
 		Set<EReference> subSets = (Set<EReference>)collections.get(CollectionKind.SubSets);
 		if (subSets!=null) {
 			subSets.forEach(object -> {
-				EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
 				String subSetRelationName = getRelationShipName(object,collections);
 				String subSetIRI = Util.buildIRIFromClassName(object.getEType().getEPackage(), subSetRelationName, visitor.context);
-				if (subsetAnnotaion!=null) {
-					subsetAnnotaion.getReferences().forEach(superSet -> {
-						EReference superRef = (EReference)superSet;
-						if (!isFiltered(superRef,collections)) {
-							String superSetRelationName = getRelationShipName(superRef, collections);
-							String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName,visitor.context);
-							oml.addSpecializationAxiom(vocabulary, subSetIRI, superSetIRI);
-						}
-					});
-				}
+				Collection<EReference> subs = getSubSets(object);
+				subs.forEach(superRef -> {
+					if (!isFiltered(superRef,collections)) {
+						String superSetRelationName = getRelationShipName(superRef, collections);
+						String superSetIRI = Util.buildIRIFromClassName(superRef.getEType().getEPackage(), superSetRelationName,visitor.context);
+						oml.addSpecializationAxiom(vocabulary, subSetIRI, superSetIRI);
+					}
+				});
 			});
 			
 		}
 		
 	}
 	
+	private Collection<EReference> getSubSets(EReference object) {
+		EList<EObject> myRefs = getDirectSubSets(object);
+		EList<EObject> otherRefs = getDirectSubSets(object.getEOpposite());
+		return mergeExcludingEopposites(myRefs, otherRefs);
+	}
+	
+	private Collection<EReference> mergeExcludingEopposites(EList<EObject> myRefs, EList<EObject> otherRefs) {
+		Set<EReference> merged = new HashSet<>();
+		myRefs.forEach(ref -> {
+			EReference eRef = (EReference)ref; 
+			merged.add(eRef);
+			if (otherRefs!=null) otherRefs.remove(eRef.getEOpposite());
+		});
+		if (otherRefs!=null) {
+			otherRefs.forEach(ref -> {
+				EReference eRef = (EReference)ref; 
+				if (!merged.contains(eRef.getEOpposite())) {
+					merged.add(eRef);
+				}
+			});
+		}
+		return merged;
+	}
 
+	private EList<EObject> getDirectSubSets(EReference ref){
+		if (ref == null) {
+			return null;
+		}
+		EAnnotation subsetAnnotaion = Util.getAnnotation(ref, SUBSETS);
+		if (subsetAnnotaion!=null) {
+			return subsetAnnotaion.getReferences();
+		}
+		return null;
+	}
 
 	private boolean isFiltered(EObject object, Map<CollectionKind, Object> collections) {
 		@SuppressWarnings("unchecked")
