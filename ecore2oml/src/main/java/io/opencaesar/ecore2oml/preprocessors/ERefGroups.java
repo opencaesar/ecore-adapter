@@ -74,7 +74,7 @@ public class ERefGroups {
 		private Group findGroup(List<Node> reachables) {
 			for (Node node : reachables) {
 				Group g = getERefGroup(node.ref);
-				if (g==null) {
+				if (g==null && node.ref.getEOpposite()!=null ) {
 					g = getERefGroup(node.ref.getEOpposite());
 				}
 				if (g!=null) {
@@ -147,6 +147,7 @@ public class ERefGroups {
 		private Set<EReference> otherSide = new HashSet<>();
 		private double side1Weight = 0 ;
 		private double side2Weight = 0 ;
+		private Map<EReference,Double> ref_to_weight = new HashMap<>();
 		
 		public Group(int id) {
 			this.id = id;
@@ -195,12 +196,17 @@ public class ERefGroups {
 			}
 			if (ref.isContainer() != ref.getEOpposite().isContainer()) {
 				if (ref.getEOpposite().isContainer()) {
-					return 0.0;
+					return 0.5;
 				}
-				return 0.5;
+				return 0.0;
 			} else if (ref.getUpperBound() != ref.getEOpposite().getUpperBound()) {
-				if (ref.getEOpposite().getUpperBound() > 0
-						&& (ref.getUpperBound() < 0 || ref.getUpperBound() > ref.getEOpposite().getUpperBound())) {
+				if (ref.getUpperBound()==-1) {
+					return 0.4;
+				}
+				if (ref.getEOpposite().getUpperBound()==-1) {
+					return 0;
+				}
+				if (ref.getEOpposite().getUpperBound() > ref.getUpperBound()) {
 					return 0.0;
 				}
 				return 0.4;
@@ -225,7 +231,9 @@ public class ERefGroups {
 		private double calcCollectionWeight(Set<EReference> refs) {
 			float weight = 0 ;
 			for (EReference ref : refs) {
-				weight += calcWeight(ref);
+				double refweight = calcWeight(ref);
+				ref_to_weight.put(ref, refweight);
+				weight += refweight;
 			}
 			return weight;
 		}		
@@ -246,6 +254,10 @@ public class ERefGroups {
 				toSkip.add(ref);
 			}
 		}
+
+		public String getWeight(EReference ref) {
+			return ref_to_weight.get(ref).toString();
+		}
 		
 	}
 	
@@ -259,8 +271,8 @@ public class ERefGroups {
 	
 	public void addERef(EReference ref) {
 		// if it is handled already then skip
+		addRefToGraph(ref);
 		if (ref.getEOpposite()!=null) {
-			addRefToGraph(ref);
 			addRefToGraph(ref.getEOpposite());
 		}
 	}
@@ -278,7 +290,9 @@ public class ERefGroups {
 	private void pushTograph(EReference ref, Collection<EReference> subs) {
 		if (subs.isEmpty()) {
 			graph.getOrCreateNode(ref);
-			graph.getOrCreateNode(ref.getEOpposite());
+			if (ref.getEOpposite()!=null) {
+				graph.getOrCreateNode(ref.getEOpposite());
+			}
 		}
 		for (EReference sub : subs) {
 			graph.addRef(ref, sub);
@@ -327,11 +341,11 @@ public class ERefGroups {
 			bldr.append("Group: " + g.id + "\n");
 			bldr.append("\tSide1: " + "(Weight: " + g.side1Weight + ")\n");
 			for (EReference ref : g.side) {
-				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName() + "\n");
+				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName() + " weight = "+ g.getWeight(ref)+"\n");
 			}
 			bldr.append("\tSide2: " + "(Weight: " + g.side2Weight + ")\n");
 			for (EReference ref : g.otherSide) {
-				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName()+ "\n");
+				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName()+ " weight = "+ g.getWeight(ref) + "\n");
 			}
 		}
 		return bldr.toString();
