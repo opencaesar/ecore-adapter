@@ -15,6 +15,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
@@ -24,6 +25,7 @@ public class ERefGroups {
 	AtomicInteger ID = new AtomicInteger();
 	private Set<Group> groups = new HashSet<>();
 	private static final String SUBSETS = "subsets";
+	private static final String REDEFINES = "redefines";
 	private Map<EReference, Group> refToGroup = new HashMap<>();
 	private Set<EReference> toSkip = new HashSet<>();
 	private Graph graph = new Graph();
@@ -276,6 +278,14 @@ public class ERefGroups {
 			addRefToGraph(ref.getEOpposite());
 		}
 	}
+	
+	public void add(EReference element, EReference superRef) {
+		Collection<EReference> col = Collections.singletonList(superRef);
+		pushTograph(element,col);
+		if (element.getEOpposite()!=null) {
+			addRefToGraph(element.getEOpposite());
+		}
+	}
 
 
 	private void addRefToGraph(EReference ref) {
@@ -305,19 +315,32 @@ public class ERefGroups {
 			return memory.get(ref);
 		}
 		EAnnotation subsets = Util.getAnnotation(ref, SUBSETS);
+		Set<EReference> ret = Collections.emptySet();
+		boolean emptySet = true;
 		if (subsets!=null) {
-			Set<EReference> ret = new HashSet<>();
+			emptySet = false;
+			ret = new HashSet<>();
 			EList<EObject> refs = subsets.getReferences();
 			for (EObject sub : refs) {
 				EReference superRef = (EReference)sub;
 				ret.add(superRef);
 				ret.addAll(getSubSets(superRef));
 			}
-			memory.put(ref, ret);
-			return ret;
 		}
-		memory.put(ref, Collections.emptySet());
-		return Collections.emptySet();
+		EAnnotation redefine = Util.getAnnotation(ref, REDEFINES);
+		if (redefine!=null) {
+			if (emptySet) {
+				ret = new HashSet<>();
+			}
+			EList<EObject> refs = redefine.getReferences();
+			for (EObject sub : refs) {
+				EReference superRef = (EReference)sub;
+				ret.add(superRef);
+				ret.addAll(getSubSets(superRef));
+			}	
+		}
+		memory.put(ref, ret);
+		return ret;
 	}
 	
 	private Group getERefGroup(EReference ref) {
@@ -331,6 +354,7 @@ public class ERefGroups {
 		for (Group group : groups) {
 			group.finish();
 		}
+		System.out.println(this);
 		LOGGER.debug(this);
 	}
 	
@@ -341,16 +365,24 @@ public class ERefGroups {
 			bldr.append("Group: " + g.id + "\n");
 			bldr.append("\tSide1: " + "(Weight: " + g.side1Weight + ")\n");
 			for (EReference ref : g.side) {
-				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName() + " weight = "+ g.getWeight(ref)+"\n");
+				bldr.append("\t\t" +  getContainerName(ref) + ":" + ref.getName() + " weight = "+ g.getWeight(ref)+"\n");
 			}
 			bldr.append("\tSide2: " + "(Weight: " + g.side2Weight + ")\n");
 			for (EReference ref : g.otherSide) {
-				bldr.append("\t\t" + ref.getEContainingClass().getName() + ":" + ref.getName()+ " weight = "+ g.getWeight(ref) + "\n");
+				bldr.append("\t\t" +  getContainerName(ref) + ":" + ref.getName()+ " weight = "+ g.getWeight(ref) + "\n");
 			}
 		}
 		return bldr.toString();
 	}
 
+
+	private String getContainerName(EReference ref) {
+		EClass containingClass = ref.getEContainingClass();
+		if (containingClass==null) {
+			return "NULL";
+		}
+		return containingClass.getName();
+	}
 
 	public boolean shouldSkip(EReference object) {
 		return toSkip.contains(object);

@@ -14,12 +14,14 @@ import org.eclipse.emf.ecore.EReference;
 import io.opencaesar.ecore2oml.ConversionContext;
 import io.opencaesar.ecore2oml.options.Relationship;
 import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
+import io.opencaesar.ecore2oml.preprocessors.ERefGroups;
 import io.opencaesar.ecore2oml.util.Pair;
 import io.opencaesar.ecore2oml.util.Util;
 
 public class EClassConversionParticipant extends ConversionParticipant {
 
 	private static final String SUBSETS = "subsets";
+	private static final String DUPLICATES = "duplicates";
 	
 	@Override
 	public void handle(EObject element, Map<CollectionKind, Object> collections) {
@@ -28,6 +30,68 @@ public class EClassConversionParticipant extends ConversionParticipant {
 			Pair<EReference, EReference> srcAndTarget = getSourceAndTaregt(object, context);
 			addRelation(object, srcAndTarget, collections);
 		}
+		
+		handleRedefineAndDublicates(object,collections);
+	}
+
+	private void handleRedefineAndDublicates(EClass object, Map<CollectionKind, Object> collections) {
+		EAnnotation annotation = Util.getAnnotation(object, DUPLICATES);
+		ERefGroups refGroups = (ERefGroups)collections.get(CollectionKind.RefGroups);
+		if (refGroups==null) {
+			refGroups = new ERefGroups();
+			collections.put(CollectionKind.RefGroups, refGroups);
+		}
+		
+		if (annotation!=null) {
+			EList<EObject> contents = annotation.eContents();
+			for(EObject element : contents) {
+				// elements here can be EOperation , ERef, EAttribute, we handle only ERef
+				if (element instanceof EReference) {
+					handleEReferenceDuplicate(object, (EReference) element,refGroups);
+				} 
+			}
+		}
+	}
+
+	private void handleEReferenceDuplicate(EClass eClass, EReference element, ERefGroups refGroups) {
+		EList<EClass> supers = eClass.getEAllSuperTypes();
+		for (int index = supers.size() -1 ; index >=0 ; index-- ) {
+			EClass superClass = supers.get(index);
+			EReference superRef = getRefByName(superClass, element.getName());
+			if (superRef!=null) {
+				refGroups.add(element,superRef);
+			}
+		}
+	}
+
+	private EReference getRefByName(EClass superClass, String name) {
+		EReference retVal  = getFetaureByNameFromDuplicate(superClass,name);
+		if (retVal==null) {
+			EList<EReference> refs = superClass.getEReferences();
+			for (EReference ref : refs) {
+				if (ref.getName().equals(name)) {
+					return ref;
+				}
+			}
+		}
+		return null;
+	}
+
+	private EReference getFetaureByNameFromDuplicate(EClass superClass, String name) {
+		EAnnotation annotation = Util.getAnnotation(superClass, DUPLICATES);
+		if (annotation!=null) {
+			EList<EObject> contents = annotation.eContents();
+			for (EObject element : contents) {
+				// elements here can be EOperation , ERef, EAttribute, we handle only ERef
+				if (element instanceof EReference) {
+					EReference ref= (EReference)element;
+					if (ref.getName().equals(name)) {
+						return ref;
+					}
+				} 
+			}
+		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
