@@ -38,7 +38,7 @@ import io.opencaesar.ecore2oml.preprocessors.participants.EClassConversionPartic
 import io.opencaesar.ecore2oml.preprocessors.participants.EPackageConversionParticipant;
 import io.opencaesar.ecore2oml.preprocessors.participants.EReferencConversionParticipant;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class Ecore2Oml extends EcoreSwitch<EObject> {
 	
@@ -54,7 +54,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	private Vocabulary vocabulary;
 	private final EPackage ePackage;
 	private final URI outputResourceURI;
-	private final OmlWriter oml;
+	private final OmlBuilder oml;
 	private Set<ConversionPreProcessing> preprocessors = new HashSet<>();
 	private Map<String,EPackage> dependency = new HashMap<>();
 	public ConversionContext context;
@@ -63,7 +63,7 @@ public class Ecore2Oml extends EcoreSwitch<EObject> {
 	
 	private Map<CollectionKind,Object> collections = new HashMap<>();
 	
-	public Ecore2Oml(EPackage ePackage, URI outputResourceURI, OmlWriter oml, ConversionContext conversionContext) {
+	public Ecore2Oml(EPackage ePackage, URI outputResourceURI, OmlBuilder oml, ConversionContext conversionContext) {
 		this.ePackage = ePackage;
 		this.outputResourceURI = outputResourceURI;
 		this.oml = oml;

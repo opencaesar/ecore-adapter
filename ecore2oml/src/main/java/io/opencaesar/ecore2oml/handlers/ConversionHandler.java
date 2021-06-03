@@ -11,20 +11,20 @@ import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.AnnotatedElement;
 import io.opencaesar.oml.Member;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public interface ConversionHandler {
 	
 
-	public EObject doConvert(EObject object, Vocabulary vocabulary, OmlWriter oml,
+	public EObject doConvert(EObject object, Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) ;
 	
-	default public void postConvert(Vocabulary vocabulary, OmlWriter oml,
+	default public void postConvert(Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		// No OP
 	}
 	
-	default public EObject convert(EObject object, Vocabulary vocabulary, OmlWriter oml,
+	default public EObject convert(EObject object, Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EObject retVal = doConvert(object, vocabulary, oml, collections, visitor);
 		if (object instanceof ENamedElement && retVal instanceof AnnotatedElement) {

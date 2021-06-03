@@ -33,24 +33,17 @@ import io.opencaesar.oml.RangeRestrictionKind;
 import io.opencaesar.oml.RelationEntity;
 import io.opencaesar.oml.ReverseRelation;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlRead;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class EReferenceHandler implements ConversionHandler{
 	
 	private static final String SUBSETS = "subsets";
-	private static final String REVERSE_PREFIX = "InverseOf_";
 	
 	private String getRelationShipName(EReference eRef,Map<CollectionKind, Object> collections) {
-		String prefix = "";
-		ERefGroups refGroups = (ERefGroups)collections.get(CollectionKind.RefGroups);
-		if (eRef.getEOpposite()== null && shouldReverse(refGroups, eRef)) {
-			prefix = REVERSE_PREFIX;
-		}
-		return  prefix + getMappedName(eRef,true);
+		return getMappedName(eRef,true);
 	}
 	
-	public  EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
+	public  EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EReference object = (EReference)eObject;
 		final String name = getMappedName(object);
@@ -89,8 +82,8 @@ public class EReferenceHandler implements ConversionHandler{
 				collisionInfo.toAspect = oml.addAspect(vocabulary, baseNameTo);
 				addGeneratedAnnotation(collisionInfo.toAspect, oml, vocabulary);
 			}
-			sourceIri =  OmlRead.getIri(collisionInfo.fromAspect);
-			targetIri =  OmlRead.getIri(collisionInfo.toAspect);
+			sourceIri =  collisionInfo.fromAspect.getIri();
+			targetIri =  collisionInfo.toAspect.getIri();
 			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml,visitor), sourceIri);
 			oml.addSpecializationAxiom(vocabulary, getIri(object.getEReferenceType(), vocabulary, oml,visitor), targetIri);
 		}
@@ -104,7 +97,7 @@ public class EReferenceHandler implements ConversionHandler{
 				final Aspect aspect = oml.addAspect(vocabulary, aspectName);
 				addGeneratedAnnotation(aspect, oml, vocabulary);
 			}
-			final String aspectIri = OmlRead.getNamespace(vocabulary) + aspectName;
+			final String aspectIri = vocabulary.getNamespace() + aspectName;
 			oml.addSpecializationAxiom(vocabulary, getIri(object.getEContainingClass(), vocabulary, oml,visitor), aspectIri);
 			sourceIri = aspectIri;
 		}
@@ -138,7 +131,7 @@ public class EReferenceHandler implements ConversionHandler{
 		if (collisionInfo!=null) {
 			oml.addRelationRangeRestrictionAxiom(vocabulary,
 						getIri(object.getEContainingClass(), vocabulary, oml,visitor),
-					   OmlRead.getIri(collisionInfo.forward),
+						collisionInfo.forward.getIri(),
 					   getIri(object.getEReferenceType(), vocabulary, oml,visitor),
 					   RangeRestrictionKind.ALL);
 		}
@@ -158,7 +151,7 @@ public class EReferenceHandler implements ConversionHandler{
 		return false;
 	}
 
-	private void addForward(Vocabulary vocabulary, OmlWriter oml, EReference object, final String name,
+	private void addForward(Vocabulary vocabulary, OmlBuilder oml, EReference object, final String name,
 			RefCollisionInfo collisionInfo, RelationEntity entity) {
 		ForwardRelation forward = oml.addForwardRelation(entity, name);
 		Util.addTitleAnnotationIfNeeded(object, forward, oml, vocabulary);
@@ -169,7 +162,7 @@ public class EReferenceHandler implements ConversionHandler{
 		}
 	}
 
-	private void addReverse(Vocabulary vocabulary, OmlWriter oml, EReference object, final EReference opposite,
+	private void addReverse(Vocabulary vocabulary, OmlBuilder oml, EReference object, final EReference opposite,
 			RelationEntity entity) {
 		String reverseName = getMappedName(opposite);
 		if (isAnnotationSet(object, AnnotationKind.reverseName)) {
@@ -190,7 +183,7 @@ public class EReferenceHandler implements ConversionHandler{
 		filtered.add(object);
 	}
 
-	private void handleSubsets(EReference object, RelationEntity entity, OmlWriter oml, Vocabulary vocabulary,Map<CollectionKind, Object> collections) {
+	private void handleSubsets(EReference object, RelationEntity entity, OmlBuilder oml, Vocabulary vocabulary,Map<CollectionKind, Object> collections) {
 		EAnnotation subsetAnnotaion = Util.getAnnotation(object, SUBSETS);
 		if (subsetAnnotaion!=null) {
 			@SuppressWarnings("unchecked")
@@ -204,7 +197,7 @@ public class EReferenceHandler implements ConversionHandler{
 	}
 	
 	@Override
-	public void postConvert(Vocabulary vocabulary, OmlWriter oml, Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
+	public void postConvert(Vocabulary vocabulary, OmlBuilder oml, Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		@SuppressWarnings("unchecked")
 		Set<EReference> subSets = (Set<EReference>)collections.get(CollectionKind.SubSets);
 		if (subSets!=null) {
@@ -269,7 +262,7 @@ public class EReferenceHandler implements ConversionHandler{
 		return false;
 	}
 
-	private void handleCardinality(Vocabulary vocabulary, OmlWriter oml, EReference object, String sourceIri,
+	private void handleCardinality(Vocabulary vocabulary, OmlBuilder oml, EReference object, String sourceIri,
 			String refIRI, String rangeIRI) {
 		if (object.getUpperBound()>1) {
 			oml.addRelationCardinalityRestrictionAxiom(vocabulary, sourceIri,  refIRI,

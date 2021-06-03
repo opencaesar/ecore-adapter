@@ -13,7 +13,7 @@ import io.opencaesar.ecore2oml.preprocessors.CollectionKind;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class EPackageHandler implements ConversionHandler {
 	
@@ -25,7 +25,7 @@ public class EPackageHandler implements ConversionHandler {
 	}
 
 	@Override
-	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlWriter oml,
+	public EObject doConvert(EObject eObject, Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections, Ecore2Oml visitor) {
 		EPackage object = (EPackage)eObject;
 		final String iri = Util.getIri(object, visitor.context);

@@ -27,13 +27,12 @@ import io.opencaesar.oml.Property;
 import io.opencaesar.oml.RangeRestrictionKind;
 import io.opencaesar.oml.ScalarProperty;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlRead;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class EAttributeHandler implements ConversionHandler {
 
 	static public ScalarProperty handleEAttributeToScalarProperty(EAttribute object, String domainIri,
-			OmlWriter oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections,Ecore2Oml e2o) {
+			OmlBuilder oml, Vocabulary vocabulary, Map<CollectionKind, Object> collections,Ecore2Oml e2o) {
 		final String name = getMappedName(object);
 		// check for collision
 		@SuppressWarnings("unchecked")
@@ -50,14 +49,14 @@ public class EAttributeHandler implements ConversionHandler {
 			if (!memberExists(realName, vocabulary)) {
 				collisionInfo.baseConcept = oml.addAspect(vocabulary, realName);
 				collisionInfo.baseProperty = oml.addScalarProperty(vocabulary, name,
-						OmlRead.getIri(collisionInfo.baseConcept), rangeIRI, isFunctional);
+						collisionInfo.baseConcept.getIri(), rangeIRI, isFunctional);
 			}
 			oml.addSpecializationAxiom(vocabulary, containerIRI,
-					OmlRead.getIri(collisionInfo.baseConcept));
+					collisionInfo.baseConcept.getIri());
 			if (!collisionInfo.sameType() && !collisionInfo.getName().equals("value")) {
 				oml.addScalarPropertyRangeRestrictionAxiom(vocabulary,
 						containerIRI,
-						OmlRead.getIri(collisionInfo.baseProperty), rangeIRI, RangeRestrictionKind.ALL);
+						collisionInfo.baseProperty.getIri(), rangeIRI, RangeRestrictionKind.ALL);
 
 			}
 			if (object.getUpperBound()>1) {
@@ -74,7 +73,7 @@ public class EAttributeHandler implements ConversionHandler {
 	}
 
 	@Override
-	public EObject doConvert(EObject oObject, Vocabulary vocabulary, OmlWriter oml,
+	public EObject doConvert(EObject oObject, Vocabulary vocabulary, OmlBuilder oml,
 			Map<CollectionKind, Object> collections,Ecore2Oml visitor) {
 		EAttribute object = (EAttribute) oObject;
 		final EClass domain = object.getEContainingClass();
@@ -91,7 +90,7 @@ public class EAttributeHandler implements ConversionHandler {
 				final Aspect aspect = oml.addAspect(vocabulary, aspectName);
 				addGeneratedAnnotation(aspect, oml, vocabulary);
 			}
-			final String aspectIri = OmlRead.getNamespace(vocabulary) + aspectName;
+			final String aspectIri = vocabulary.getNamespace() + aspectName;
 			oml.addSpecializationAxiom(vocabulary, getIri(domain, vocabulary, oml,visitor), aspectIri);
 			domainIri = aspectIri;
 		}
@@ -106,7 +105,7 @@ public class EAttributeHandler implements ConversionHandler {
 		return property;
 	}
 
-	static private AnnotationProperty caseEAttributeToAnnotationProperty(EAttribute object, OmlWriter oml,
+	static private AnnotationProperty caseEAttributeToAnnotationProperty(EAttribute object, OmlBuilder oml,
 			Vocabulary vocabulary) {
 		final String name = getMappedName(object);
 		return oml.addAnnotationProperty(vocabulary, name);

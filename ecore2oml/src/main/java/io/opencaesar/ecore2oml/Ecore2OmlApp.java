@@ -39,7 +39,7 @@ import com.google.inject.Injector;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class Ecore2OmlApp {
 
@@ -147,7 +147,7 @@ public class Ecore2OmlApp {
 		
 
 		// create the Oml writer
-		final OmlWriter writer = new OmlWriter(outputResourceSet);
+		final OmlBuilder writer = new OmlBuilder(outputResourceSet);
 		
 		// start the Oml Writer
 		writer.start();

@@ -15,7 +15,7 @@ import io.opencaesar.ecore2oml.Ecore2Oml;
 import io.opencaesar.ecore2oml.util.Constants;
 import io.opencaesar.ecore2oml.util.Util;
 import io.opencaesar.oml.Vocabulary;
-import io.opencaesar.oml.util.OmlWriter;
+import io.opencaesar.oml.util.OmlBuilder;
 
 public class RelationshipUtil {
 
@@ -104,7 +104,7 @@ public class RelationshipUtil {
 		return builder.toString();
 	}
 
-	public Relationship getInfo(EClass eContainingClass, OmlWriter oml, Vocabulary vocabulary, Ecore2Oml e2o) {
+	public Relationship getInfo(EClass eContainingClass, OmlBuilder oml, Vocabulary vocabulary, Ecore2Oml e2o) {
 		return this.getInfo(Util.getIri(eContainingClass, vocabulary, oml, e2o));
 	}
 
