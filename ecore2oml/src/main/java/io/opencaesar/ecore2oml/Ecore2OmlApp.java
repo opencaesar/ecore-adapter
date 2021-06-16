@@ -163,11 +163,11 @@ public class Ecore2OmlApp {
 		}
 		
 
-		// create the Oml writer
-		final OmlBuilder writer = new OmlBuilder(outputResourceSet);
+		// create the Oml builder
+		final OmlBuilder builder = new OmlBuilder(outputResourceSet);
 		
-		// start the Oml Writer
-		writer.start();
+		// start the Oml Builder
+		builder.start();
 
 		Map<String,EPackage> dependency = new HashMap<>();
 		Set<String> handled = new HashSet<>();
@@ -185,7 +185,7 @@ public class Ecore2OmlApp {
 						final String relativePath = catalog.resolveURI(ePackage.getNsURI())+"."+OML_EXTENSION;
 						final URI outputResourceURI = URI.createURI(relativePath);
 						LOGGER.info("Creating: "+outputResourceURI);
-						Ecore2Oml e2o = new Ecore2Oml(ePackage, outputResourceURI, writer,conversionContext);
+						Ecore2Oml e2o = new Ecore2Oml(ePackage, outputResourceURI, builder,conversionContext);
 						e2o.run();
 						dependency.putAll(e2o.getDependencies());
 						outputResourceURIs.add (outputResourceURI);
@@ -204,7 +204,7 @@ public class Ecore2OmlApp {
 			for (Entry<String, EPackage> iri: dependency.entrySet()) {
 				String ecoreRelativePath =  catalog.resolveURI(iri.getKey()) +"."+OML_EXTENSION;
 				URI ecoreResourceURI = URI.createURI(ecoreRelativePath);
-				Ecore2Oml e2o = new Ecore2Oml(iri.getValue(), ecoreResourceURI, writer,conversionContext);				
+				Ecore2Oml e2o = new Ecore2Oml(iri.getValue(), ecoreResourceURI, builder,conversionContext);				
 				e2o.run();
 				dependency.putAll(e2o.getDependencies());
 				outputResourceURIs.add (ecoreResourceURI);
@@ -216,10 +216,10 @@ public class Ecore2OmlApp {
 			});
 		}
 		
-		// finish the Oml writer
-		writer.finish();
+		// finish the Oml builder
+		builder.finish();
 		
-		// save the output resources here instead of calling writer.save in order to log
+		// save the output resources here instead of calling builder.save in order to log
 		for (URI outputResourceURI : outputResourceURIs) {
 			if (outputResourceURI.fileExtension().equals("oml")) {
 				LOGGER.info("Saving: "+outputResourceURI);
