@@ -19,12 +19,20 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
-import org.gradle.work.Incremental;
 
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
 
+/**
+ * A gradle task to invoke the ecore to oml tool 
+ */
 public abstract class Ecore2OmlTask extends DefaultTask {
+
+	/**
+	 * Creates a new Ecore2OmlTask object
+	 */
+	public Ecore2OmlTask() {
+	}
 
 	@Input
     public abstract Property<File> getInputFolderPath();
@@ -35,19 +43,20 @@ public abstract class Ecore2OmlTask extends DefaultTask {
     @Optional
     @Input
     public abstract Property<Boolean> getDebug();
-
-	@Incremental
+    
 	@InputFiles
     @SuppressWarnings("deprecation")
     protected ConfigurableFileCollection getInputFiles() {
     	try {
-    		return getProject().files(collectEcoreFiles(getInputFolderPath().get()));
+    		File f = getInputFolderPath().get();
+    		var files = f.exists() ? collectEcoreFiles(f) : Collections.emptyList();
+    		return getProject().files(files);
     	} catch (Exception e) {
 			throw new GradleException(e.getLocalizedMessage(), e);
     	}
     }
-    
-   @OutputFiles
+
+	@OutputFiles
    @SuppressWarnings("deprecation")
    protected ConfigurableFileCollection getOutputFiles() {
     	try {
