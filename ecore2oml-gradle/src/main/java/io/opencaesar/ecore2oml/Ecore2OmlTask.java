@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.xml.resolver.Catalog;
-import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -20,7 +18,6 @@ import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 
-import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
 
 /**
@@ -34,18 +31,37 @@ public abstract class Ecore2OmlTask extends DefaultTask {
 	public Ecore2OmlTask() {
 	}
 
+	/**
+	 * Path of input folder of Ecore files
+	 * 
+	 * @return File Property
+	 */
 	@Input
     public abstract Property<File> getInputFolderPath();
 
+	/**
+	 * Path of output OML catalog
+	 * 
+	 * @return String Property
+	 */
 	@Input
     public abstract Property<File> getOutputCatalogPath();
 
+	/**
+	 * The debug flag
+	 * 
+	 * @return Boolean Property
+	 */
     @Optional
     @Input
     public abstract Property<Boolean> getDebug();
     
+	/**
+	 * The collection of input Ecore files
+	 * 
+     * @return ConfigurableFileCollection
+	 */
 	@InputFiles
-    @SuppressWarnings("deprecation")
     protected ConfigurableFileCollection getInputFiles() {
     	try {
     		File f = getInputFolderPath().get();
@@ -56,9 +72,13 @@ public abstract class Ecore2OmlTask extends DefaultTask {
     	}
     }
 
+	/**
+	 * The collection of output OML files referenced by the output Oml catalog
+	 * 
+     * @return ConfigurableFileCollection
+	 */
 	@OutputFiles
-   @SuppressWarnings("deprecation")
-   protected ConfigurableFileCollection getOutputFiles() {
+	protected ConfigurableFileCollection getOutputFiles() {
     	try {
     		return getProject().files(collectOmlFiles(getOutputCatalogPath().get().getParentFile()));
     	} catch (Exception e) {
@@ -66,6 +86,9 @@ public abstract class Ecore2OmlTask extends DefaultTask {
     	}
     }
 
+   /**
+    * The gradle task action logic.
+    */
 	@TaskAction
     public void run() {
         List<String> args = new ArrayList<String>();
@@ -87,20 +110,6 @@ public abstract class Ecore2OmlTask extends DefaultTask {
 		}
    	}
     
-	public static List<File> collectOmlFiles(OmlCatalog catalog) throws Exception {
-		final List<File> files = new ArrayList<>();
-		catalog.getEntries().stream().filter(e -> e.getEntryType() == Catalog.REWRITE_URI).forEach(e -> {
-			String folderPath = e.getEntryArg(1);
-			File path = new File(URI.createURI(folderPath).toFileString());
-			files.addAll(collectOmlFiles(path));
-		});
-		for (String subCatalogPath : catalog.getNestedCatalogs()) {
-			final OmlCatalog subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath));
-			files.addAll(collectOmlFiles(subCatalog));
-		}
-		return files;
-	}
-	
 	private static List<File> collectOmlFiles(File path) {
 		final List<File> files;
 		if (path.isDirectory()) {
