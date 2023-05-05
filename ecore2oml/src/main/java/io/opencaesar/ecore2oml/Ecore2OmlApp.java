@@ -55,6 +55,9 @@ import io.opencaesar.oml.util.OmlBuilder;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
 
+/**
+ * An application to convert Ecore models to OML 
+ */
 public class Ecore2OmlApp {
 
 	private static final String ECORE = "ecore";
