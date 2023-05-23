@@ -18,7 +18,6 @@
 package io.opencaesar.ecore2oml;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,20 +58,20 @@ import io.opencaesar.oml.SeparatorKind;
 import io.opencaesar.oml.UnreifiedRelation;
 import io.opencaesar.oml.Vocabulary;
 import io.opencaesar.oml.util.OmlBuilder;
-import io.opencaesar.oml.util.OmlCatalog;
-import io.opencaesar.oml.util.OmlConstants;
 
 class Ecore2Oml extends EcoreSwitch<EObject> {
 	
-	// Namespaces for core vocabularies
+	// IRIs for Ecore metamodels
 	private static final String XML_TYPE_IRI = "http://www.eclipse.org/emf/2003/XMLType";
 	private static final String Ecore_IRI = "http://www.eclipse.org/emf/2002/Ecore";
-	private static final String XSD_IRI = "http://www.w3.org/2001/XMLSchema";
-	private static final String RDF_IRI = "http://www.w3.org/1999/02/22-rdf-syntax-ns";
-	private static final String RDFS_IRI = "http://www.w3.org/2000/01/rdf-schema";
-	private static final String OWL_IRI = "http://www.w3.org/2002/07/owl";
 	private static final String EXTENDED_META_DATA_IRI = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData";
 	private static final String GEN_MODEL_IRI = "http://www.eclipse.org/emf/2002/GenModel";
+
+	// Namespaces for core vocabularies
+	private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
+	private static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	private static final String RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
+	private static final String OWL_NS = "http://www.w3.org/2002/07/owl#";
 
 	// XSD types
 	private static final Map<String, String> xsdTypes = new HashMap<String, String>();
@@ -171,7 +170,8 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	private final File inputFolder;
 	private final Resource inputResource;
-	private final OmlCatalog catalog;
+	private final File outputFolder;
+	private final String outputFileExtension;
 	private final OmlBuilder oml;
 
 	private AssociationBuilder associations;
@@ -180,10 +180,11 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 
 	private Map<Object, Ontology> rootToOntology = new HashMap<>();
 	
-	public Ecore2Oml(File inputFolder, Resource inputResource, OmlCatalog catalog, OmlBuilder oml) {
+	public Ecore2Oml(File inputFolder, Resource inputResource, File outputFolder, String outputFileExtension, OmlBuilder oml) {
 		this.inputFolder = inputFolder;
 		this.inputResource = inputResource;
-		this.catalog = catalog;
+		this.outputFolder = outputFolder;
+		this.outputFileExtension = outputFileExtension;
 		this.oml = oml;
 		this.associations = new AssociationBuilder(inputResource);
 	}
@@ -217,12 +218,9 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 	}
 	
 	private URI getMappedResourceURI(String iri) {
-		try {
-			String relativePath = catalog.resolveURI(iri)+"."+OmlConstants.OML_EXTENSION;
-			return URI.createURI(relativePath);
-		} catch (IOException e) {
-			return null;
-		}
+		var uri = URI.createURI(iri);
+		var relativePath = uri.authority()+uri.path()+"."+outputFileExtension;
+		return URI.createFileURI(outputFolder.getAbsolutePath()+File.separator+relativePath);
 	}
 	
 	@Override
@@ -241,10 +239,10 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 			File inputFile = new File(inputResource.getURI().trimFileExtension().toFileString());
 			String relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath();
 			final String iri = "http://" + relativePath;
-			final SeparatorKind separator = SeparatorKind.HASH;
+			final String namespace = iri+SeparatorKind.HASH;
 			final String pefix = inputFile.getName();
 			
-			Description description = oml.createDescription(addNewURI(iri), iri, separator, pefix);
+			Description description = oml.createDescription(addNewURI(iri), namespace, pefix);
 			rootToOntology.put(object.eResource(), description);
 			return description;
 		}
@@ -266,10 +264,10 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 	@Override
 	public EObject caseEPackage(EPackage object) {
 		final String iri = getIri(object);
-		final SeparatorKind separator = getSeparator(object);
+		final String namespace = iri+getSeparator(object);
 		final String pefix = getPrefix(object);
 		
-		Vocabulary vocabulary = oml.createVocabulary(addNewURI(iri), iri, separator, pefix);
+		Vocabulary vocabulary = oml.createVocabulary(addNewURI(iri), namespace, pefix);
 		rootToOntology.put(object, vocabulary);
 
 		// build the associations first
@@ -289,12 +287,9 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 		final String name = getEnumeratedScalarName(object);
 		final Literal[] literals = object.getELiterals().stream().map(i -> doSwitch(i)).toArray(Literal[]::new);
 
-		final Scalar scalar = oml.addScalar(vocabulary, name, null, null, null, null, null, null, null, null, null);
+		final Scalar scalar = oml.addScalar(vocabulary, name);
 		oml.addLiteralEnumerationAxiom(vocabulary, scalar.getIri(), literals);
 		addAnnotations(scalar, object);
-
-		oml.addSpecializationAxiom(vocabulary, scalar.getIri(), getTermIriAndImportIfNeeded(vocabulary, XSD_IRI, SeparatorKind.HASH, "string", "xsd"));
-
 		return scalar;
 	}
 	
@@ -336,13 +331,13 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 			if (base != null && base != object) {
 				baseIri = vocabulary.getIri()+SeparatorKind.HASH+baseName;
 			} else {
-				baseIri = getTermIriAndImportIfNeeded(vocabulary, RDFS_IRI, SeparatorKind.HASH, "Literal", "rdfs");
+				baseIri = getTermIriAndImportIfNeeded(vocabulary, RDFS_NS,  "Literal", "rdfs");
 			}				
 		}
 
-		final Scalar scalar = oml.addScalar(vocabulary, name, null, null, null, null, null, null, null, null, null);
+		final Scalar scalar = oml.addScalar(vocabulary, name);
 		addAnnotations(scalar, object);
-		oml.addSpecializationAxiom(vocabulary, scalar.getIri(), baseIri);
+		oml.addScalarEquivalenceAxiom(vocabulary, scalar.getIri(), baseIri, null, null, null, null, null, null, null, null, null);
 
 		return scalar;
 	}
@@ -413,10 +408,10 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 		// Relation specialization
 		for (EAttribute attr : getSuperEAttributes(object)) {
 			final String attrPackageIri = getIri(attr.getEContainingClass().getEPackage());
-			final SeparatorKind attrPackageSep = getSeparator(attr.getEContainingClass().getEPackage());
+			final String attrPackageNamespace = attrPackageIri + getSeparator(attr.getEContainingClass().getEPackage());
 			final String attrPackagePrefix = getPrefix(attr.getEContainingClass().getEPackage());
 			final String attrName = getScalarPropertyName(attr);
-			String baseIri = getTermIriAndImportIfNeeded(vocabulary, attrPackageIri, attrPackageSep, attrName, attrPackagePrefix);
+			String baseIri = getTermIriAndImportIfNeeded(vocabulary, attrPackageNamespace, attrName, attrPackagePrefix);
 			oml.addSpecializationAxiom(vocabulary, property.getIri(), baseIri);
 		}
 
@@ -491,10 +486,10 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 			}
 			
 			final String refPackageIri = getIri(ePackage);
-			final SeparatorKind refPackageSep = getSeparator(ePackage);
+			final String refPackageNamespace = refPackageIri + getSeparator(ePackage);
 			final String refPackagePrefix = getPrefix(ePackage);
 			
-			String superRelationIri = getTermIriAndImportIfNeeded(vocabulary, refPackageIri, refPackageSep, refName, refPackagePrefix);
+			String superRelationIri = getTermIriAndImportIfNeeded(vocabulary, refPackageNamespace, refName, refPackagePrefix);
 			oml.addSpecializationAxiom(vocabulary, relation.getIri(), superRelationIri);
 		}
 		
@@ -514,14 +509,14 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 		final Ontology ontology = member.getOntology(); 
 
 		// add rdfs:label
-		oml.addAnnotation(ontology, member.getIri(), getTermIriAndImportIfNeeded(ontology, RDFS_IRI, SeparatorKind.HASH, "label", "rdfs"), oml.createQuotedLiteral(ontology, object.getName(), null, null), null);
+		oml.addAnnotation(ontology, member.getIri(), getTermIriAndImportIfNeeded(ontology, RDFS_NS, "label", "rdfs"), oml.createQuotedLiteral(ontology, object.getName(), null, null), null);
 
 		// add rfds:comment
 		EAnnotation genModel = object.getEAnnotation(GEN_MODEL_IRI);
 		if (genModel != null) {
 			String doc = genModel.getDetails().get("documentation");
 			if (doc != null) {
-				oml.addAnnotation(ontology, member.getIri(), getTermIriAndImportIfNeeded(ontology, RDFS_IRI, SeparatorKind.HASH, "comment", "rdfs"), oml.createQuotedLiteral(ontology, doc, null, null), null);
+				oml.addAnnotation(ontology, member.getIri(), getTermIriAndImportIfNeeded(ontology, RDFS_NS, "comment", "rdfs"), oml.createQuotedLiteral(ontology, doc.trim(), null, null), null);
 			}
 		}
 	}
@@ -550,7 +545,7 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 	private String getIri(Ontology ontology, EClassifier object) {
 		final String name = object.getName();
 		final String iri = getIri(object.getEPackage());
-		final SeparatorKind sep = getSeparator(object.getEPackage());
+		final String namespace = iri + getSeparator(object.getEPackage());
 		final String prefix =  getPrefix(object.getEPackage());
 
 		if (object instanceof EDataType) {
@@ -563,32 +558,32 @@ class Ecore2Oml extends EcoreSwitch<EObject> {
 			addImportedURI(object.getEPackage());
 		}
 		
-		return getTermIriAndImportIfNeeded(ontology, iri, sep, name, prefix);
+		return getTermIriAndImportIfNeeded(ontology, namespace, name, prefix);
 	}
 
-	private String getTermIriAndImportIfNeeded(Ontology ontology, String iri, SeparatorKind sep, String name, String prefix) {
-		if (!iri.equals(ontology.getIri())) {
-			if (!ontology.getOwnedImports().stream().anyMatch(i -> i.getIri().equals(iri))) {
+	private String getTermIriAndImportIfNeeded(Ontology ontology, String namespace, String name, String prefix) {
+		if (!namespace.equals(ontology.getNamespace())) {
+			if (!ontology.getOwnedImports().stream().anyMatch(i -> i.getNamespace().equals(namespace))) {
 				if (ontology instanceof Vocabulary) {
-					oml.addImport((Vocabulary) ontology, ImportKind.EXTENSION, iri, sep, prefix);
+					oml.addImport((Vocabulary) ontology, ImportKind.EXTENSION, namespace, prefix);
 				} else if (ontology instanceof Description) {
-					oml.addImport((Description) ontology, ImportKind.USAGE, iri, sep, prefix);
+					oml.addImport((Description) ontology, ImportKind.USAGE, namespace, prefix);
 				}
 			}
 		}
-		return iri+sep+name;
+		return namespace+name;
 	}
 	
 	private String getStandardIri(Ontology ontology, String name) {
 		name = name.toLowerCase();
 		if (xsdTypes.containsKey(name)) {
-			return getTermIriAndImportIfNeeded(ontology, XSD_IRI, SeparatorKind.HASH, xsdTypes.get(name), "xsd");
+			return getTermIriAndImportIfNeeded(ontology, XSD_NS, xsdTypes.get(name), "xsd");
 		} else if (owlTypes.containsKey(name)) {
-			return getTermIriAndImportIfNeeded(ontology, OWL_IRI, SeparatorKind.HASH, owlTypes.get(name), "owl");
+			return getTermIriAndImportIfNeeded(ontology, OWL_NS, owlTypes.get(name), "owl");
 		} else if (rdfsTypes.containsKey(name)) {
-			return getTermIriAndImportIfNeeded(ontology, RDFS_IRI, SeparatorKind.HASH, rdfsTypes.get(name), "rdfs");
+			return getTermIriAndImportIfNeeded(ontology, RDFS_NS, rdfsTypes.get(name), "rdfs");
 		} else if (rdfTypes.containsKey(name)) {
-			return getTermIriAndImportIfNeeded(ontology, RDF_IRI, SeparatorKind.HASH, rdfTypes.get(name), "rdf");
+			return getTermIriAndImportIfNeeded(ontology, RDF_NS, rdfTypes.get(name), "rdf");
 		}
 		System.out.println(name);
 		return null;
