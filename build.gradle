@@ -1,6 +1,6 @@
 subprojects {
     group = 'io.opencaesar.adapters'
-    version = '2.11.0'
+    version = '2.13.0'
     
     ext.versions = [
         oml: '2.+',
@@ -23,8 +23,8 @@ subprojects {
     apply from: "${rootDir}/gradle/maven-deployment.gradle"
     
     java {
-	    sourceCompatibility = '17'
-	    targetCompatibility = '17'
+	    sourceCompatibility = '21'
+	    targetCompatibility = '21'
         withJavadocJar()
         withSourcesJar()
     }
